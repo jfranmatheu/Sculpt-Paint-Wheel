@@ -1,6 +1,6 @@
 
 from ..import __package__ as __main__
-if __main__ == 'SculptPaintWheel':
+if __main__ == 'sculpt_paint_wheel':
   from enum import Enum
 
   CF_VS = """

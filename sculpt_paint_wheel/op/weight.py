@@ -368,7 +368,7 @@ class WEIGHT_OT_wheel(Operator):
                 self.draw_tool_toggle = ADD if active_tool.blend == 'ADD' else SUBSTRACT
             else:
                 self.draw_tool_toggle = -1
-            self.draw_tool.label = active_tool.blend
+            #self.draw_tool.label = active_tool.blend
         else:
             self.draw_tool = None
             self.draw_tool_toggle = -1

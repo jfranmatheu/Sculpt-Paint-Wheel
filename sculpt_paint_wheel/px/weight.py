@@ -155,8 +155,13 @@ def draw_callback_px(op, ctx, o):
         space = ' ' in text
     elif op.toolbar.hovered_tool:
         #text = "Tool ________ " + op.toolbar.hovered_tool.label
-        text = op.toolbar.hovered_tool.label
-        space = ' ' in text
+        if op.draw_tool and op.draw_tool == op.toolbar.hovered_tool and op.wheel.use_add_substract_brush and op.draw_tool_toggle != -1:
+            text = 'Add' if op.draw_tool_toggle == ADD else 'Subtract'
+            text += " (click_to_switch)"
+            space = True
+        else:
+            text = op.toolbar.hovered_tool.label
+            space = ' ' in text
 
     if text:
         if space:
@@ -189,12 +194,12 @@ def draw_callback_px(op, ctx, o):
             co = (.24, .24, .24, .8) if op.draw_tool.is_on_hover else (.1, .1, .1, .8)
         if op.draw_tool_toggle == SUBSTRACT:
             lco = (1, .5, .05, 1)
-            icon = '＋' #➕
-            offset = Vector((0, 0))
-        else:
-            lco = (0.05, .5, 1, 1)
             icon = '─' # ➖
             offset = Vector((1*op.dpi_factor, -5*op.dpi_factor))
+        else:
+            lco = (0.05, .5, 1, 1)
+            icon = '＋' #➕
+            offset = Vector((0, 0))
         DiCFCL(op.draw_tool.center, op.toolbar.item_size/2, co, lco)
         Draw_Text_AlignCenter(*op.draw_tool.center+offset, icon, int(op.text_size*24/12))
         RstLineSBlend()

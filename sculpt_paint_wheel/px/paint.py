@@ -21,7 +21,9 @@ NONE = -1
 def draw_callback_px(op, ctx, o):
     if ctx.area != op.ctx_area:
         return
-    
+
+    if op.is_gpencil:
+        DiCFS(o, op.rad*1.32, (.05, .05, .05, .75))
     DiCFS(o, op.rad, op.theme.base_color)
     DiCLS(o, op.rad*.95, 64, 1.5, (.4, .4, .4, .9))
     ts_12 = int(op.text_size)
@@ -29,7 +31,7 @@ def draw_callback_px(op, ctx, o):
     ts_16 = int(ts_12 * 16/12)
     ts_13 = int(ts_12 * 13/12)
     dpi = op.dpi_factor
-    
+
     SetBlend()
     if not op.is_sliding_type:
         RstColorSpace()
@@ -49,6 +51,9 @@ def draw_callback_px(op, ctx, o):
             elif op.coloring_type == RECT:
                 DiCFCL(op.handle_sv, 9*dpi, [*op.color, 1], (v, v, v, 1))
         SetSRGB()
+        # Tapar/overlay para desactivar el pk.
+        if op.is_gpencil and not op.gpencil_use_color:
+            DiCFS(o, op.color_ring_rad+5, (.1, .1, .1, .8))
     else:
         if op.is_sliding_type == SIZE:
             Draw_Text_AlignCenter(o[0], o[1]+op.rad*.3, "Size", ts_16)

@@ -4,6 +4,7 @@ from .. px.paint import *
 from mathutils import Color, Vector
 from math import cos, sin, tan, pi, degrees, atan, floor, log
 from .. utils import * #Cursor, CursorIcon
+from .. utils.checkers import is_gpencil, is_gpencil_paint
 from .. addon import get_keyitem, get_prefs
 
 
@@ -14,7 +15,7 @@ class PAINT_OT_wheel(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX'}
+        return context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX', 'PAINT_GPENCIL', 'VERTEX_GPENCIL'}
 
     def finish(self, context=None):
         if hasattr(self, '_handler'):
@@ -215,6 +216,9 @@ class PAINT_OT_wheel(Operator):
     def picker_mode(self, context, event, mouse):
         if event.type == 'LEFTMOUSE':
             if event.value == 'PRESS':
+                if self.is_gpencil and not self.gpencil_use_color:
+                    # Check for materials...
+                    return {'RUNNING_MODAL'}
                 if point_inside_rect(mouse, self.color_rect_tr, self.color_rect_size):
                     self.set_coloring(context, True, 1)
                     return {'RUNNING_MODAL'}
@@ -225,7 +229,7 @@ class PAINT_OT_wheel(Operator):
 
 
     def invoke(self, context, event):
-        if not UnifiedPaintPanel.paint_settings(context):
+        if not UnifiedPaintPanel.paint_settings(context) and not is_gpencil(context):
             return {'FINISHED'}
         mode_settings = self.get_tool_settings(context)
         if not mode_settings:
@@ -233,11 +237,21 @@ class PAINT_OT_wheel(Operator):
         if not mode_settings.brush:
             return {'FINISHED'}
 
+        self.is_gpencil = is_gpencil(context)
+        if self.is_gpencil:
+            if is_gpencil_paint(context):
+                # Only vertex color, not material.
+                self.gpencil_use_color = mode_settings.color_mode == 'VERTEXCOLOR' ## :-)))))))
+            else:
+                self.gpencil_use_color = True
+
         self.prefs = get_prefs(context)
         self.can_close = not self.prefs.keep_open
         self.theme = self.prefs.theme
-        
+
         wheel_rad = self.rad = self.prefs.radius
+        if not self.gpencil_use_color:
+            wheel_rad = self.rad = 128
         win_h = context.window.height
         if win_h >= 1050 and win_h <= 1080:
             self.dpi_factor = 1.0
@@ -245,7 +259,7 @@ class PAINT_OT_wheel(Operator):
             self.dpi_factor = win_h / 1057 # 1057 without title bar of app.
             self.rad *= self.dpi_factor
         
-        self.ups = context.tool_settings.unified_paint_settings
+        self.ups = context.tool_settings.unified_paint_settings if not self.is_gpencil else None
         self.active_tool = mode_settings.brush
         self.color = self.active_tool.color
 
@@ -272,7 +286,6 @@ class PAINT_OT_wheel(Operator):
         
         #if context.mode == 'PAINT_TEXTURE':
         self.init_texture_paint(context)
-
 
         if not context.window_manager.modal_handler_add(self):
             return {'CANCELLED'}
@@ -303,7 +316,7 @@ class PAINT_OT_wheel(Operator):
         else:
             #return smoothstep(101-500, 500, size) # -500 is a hack so is clamped between 0.5-1.0
             return lerp(0.5, 1.0, size/500)
-    
+
     def update_size_handler(self, angle=-1):
         start = self.pos + Vector((0, self.rad))
         if angle == -1:
@@ -312,7 +325,7 @@ class PAINT_OT_wheel(Operator):
             factor = clamp(factor, 0, 1)
             angle = factor*radians(90)
         self.handle_size = rotate_point_around_point(self.pos, start, angle)
-    
+
     def update_strength_handler(self, angle=-1):
         start = self.pos + Vector((0, self.rad))
         if angle == -1:
@@ -322,25 +335,23 @@ class PAINT_OT_wheel(Operator):
             #print(factor)
             angle = factor*radians(-90)-radians(90)
         self.handle_strenght = rotate_point_around_point(self.pos, start, angle)
-    
+
     def get_tool_settings(self, ctx):
         if ctx.mode == 'PAINT_TEXTURE':
             return ctx.tool_settings.image_paint
         elif ctx.mode == 'PAINT_VERTEX':
             return ctx.tool_settings.vertex_paint
+        elif ctx.mode == 'PAINT_GPENCIL':
+            return ctx.tool_settings.gpencil_paint
+        elif ctx.mode == 'VERTEX_GPENCIL':
+            return ctx.tool_settings.gpencil_vertex_paint
         return None
-        
+
     def set_show_brush(self, ctx, state):
-        if ctx.mode == 'PAINT_TEXTURE':
-            ctx.tool_settings.image_paint.show_brush = state
-        elif ctx.mode == 'PAINT_VERTEX':
-            ctx.tool_settings.vertex_paint.show_brush = state
-    
+        self.get_tool_settings(ctx).show_brush = state
+
     def set_color(self, ctx):
-        if ctx.mode == 'PAINT_TEXTURE':
-            ctx.tool_settings.image_paint.brush.color = self.color
-        elif ctx.mode == 'PAINT_VERTEX':
-            ctx.tool_settings.vertex_paint.brush.color = self.color
+        self.get_tool_settings(ctx).brush.color = self.color
 
     def set_coloring(self, ctx, enable=False, _type=-1):
         self.coloring = enable
@@ -352,27 +363,31 @@ class PAINT_OT_wheel(Operator):
     def get_brush_size(self):
         #if not self.active_tool:
         #    return self.prev_brush_size
-        if self.ups.use_unified_size:
+        if self.ups and self.ups.use_unified_size:
             return self.ups.size
         return self.active_tool.size
 
     def get_brush_strength(self):
         #if not self.active_tool:
         #    return self.prev_brush_strength
-        if self.ups.use_unified_strength:
+        if self.is_gpencil:
+            return self.active_tool.gpencil_settings.pen_strength
+        if self.ups and self.ups.use_unified_strength:
             return self.ups.strength
         return self.active_tool.strength
 
     def set_brush_size(self, value):
         value = clamp(value, 1, 500)
-        if self.ups.use_unified_size:
+        if self.ups and self.ups.use_unified_size:
             self.ups.size = value
         else:
             self.active_tool.size = value
 
     def set_brush_strength(self, value):
         value = clamp(value, 0.01, 2)
-        if self.ups.use_unified_strength:
+        if self.is_gpencil:
+            self.active_tool.gpencil_settings.pen_strength = value
+        elif self.ups and self.ups.use_unified_strength:
             self.ups.strength = value
         else:
             self.active_tool.strength = value

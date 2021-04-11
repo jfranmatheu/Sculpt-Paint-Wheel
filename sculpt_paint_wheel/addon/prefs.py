@@ -71,7 +71,7 @@ class WheelPreferences(AddonPreferences):
         props = settings.box()
         props.prop(self, 'radius', text="Wheel Radius", slider=True)
 
-        if is_prefs or (not is_prefs and context.mode in {'SCULPT', 'PAINT_WEIGHT'}):
+        if is_prefs or (not is_prefs and context.mode in {'SCULPT', 'PAINT_WEIGHT', 'WEIGHT_GPENCIL'}):
             props.prop(self, 'gesturepad_mode')
             props.prop(self, 'gesturepad_invert', text="Invert Gesture Direction")
             
@@ -92,7 +92,7 @@ class WheelPreferences(AddonPreferences):
 
                 props.prop(self, 'on_release_select', text="Select Tool OnRelease")
             
-            if is_prefs or context.mode == 'PAINT_WEIGHT':
+            if is_prefs or context.mode in {'PAINT_WEIGHT', 'WEIGHT_GPENCIL'}:
                 settings = left_column.column(align=True)
                 header = settings.box()
                 wheel = context.scene.weight_wheel
@@ -101,10 +101,12 @@ class WheelPreferences(AddonPreferences):
                 props = settings.box()
                 props.prop(wheel, 'show_markers')
                 props.prop(wheel, 'use_interactable_markers')
-                props.prop(wheel, 'set_weight_of_selection_directly')
-                props.prop(wheel, 'use_add_substract_brush')
+
+                if context.mode == 'PAINT_WEIGHT':
+                    props.prop(wheel, 'set_weight_of_selection_directly')
+                    props.prop(wheel, 'use_add_substract_brush')
         
-        if not is_prefs and context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX'}:
+        if not is_prefs and context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX', 'PAINT_GPENCIL', 'VERTEX_GPENCIL'}:
             # COLOR PICKER PROPERTIES...
             color_picker = self.color_picker
             
@@ -143,13 +145,13 @@ class WheelPreferences(AddonPreferences):
             
             props = keymap_col.box()
             
-            for mode in modes:
+            for mode, value in modes.items():
                 kmi = get_keyitem_mode(context, mode)
                 if kmi:
                     #for attr in dir(kmi):
                     #    print(attr + " -> ", getattr(kmi, attr))
                     box = props.box()
-                    box.label(text=mode + " keymap :")
+                    box.label(text=value['label'] + " keymap :")
                     row = box.row()
                     row.label(text="Press Key")
                     row.template_event_from_keymap_item(kmi)
@@ -159,9 +161,9 @@ class WheelPreferences(AddonPreferences):
             
             settings = keymap_col
             
-            right_column.separator()
+            #left_column.separator()
             
-            color_picker_block = right_column.column(align=True)
+            color_picker_block = left_column.column(align=True)
             header = color_picker_block.box()
             header.label(text="Color Picker", icon='COLORSET_04_VEC')
             
@@ -170,14 +172,11 @@ class WheelPreferences(AddonPreferences):
             props.prop(color_picker, 'lock_ring_sv', text="[Ring] Lock SV")
             
         
-        box = settings.box()
+        box = left_column.box()
         box.label(text="Other Settings:") 
         box.use_property_split = False
         box.prop(self, 'keep_open', text="Press Again to Close")
-        
-        
-        
-        
+
         
         if is_prefs:
             left_column.separator()
@@ -192,7 +191,7 @@ class WheelPreferences(AddonPreferences):
             props.prop(theme, 'pad_color', text="PAD Color")
             
 
-            layout.operator('io.backup_all_addon_data', text="Back-Up addon data", icon='TEMP')
+            #layout.operator('io.backup_all_addon_data', text="Back-Up addon data", icon='TEMP')
 
         
         '''

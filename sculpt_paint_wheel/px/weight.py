@@ -84,7 +84,7 @@ def draw_callback_px(op, ctx, o):
     
 
     num_buttons = 8 #len(op.wheel.custom_buttons)
-    DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color, (.7, .7, .7, 1))
+    DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color if not op.is_gpencil else (.1, .1, .1, .85), (.7, .7, .7, 1))
     if op.gestual:
         DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
         if not op.gestual_sabe_dir:
@@ -102,32 +102,33 @@ def draw_callback_px(op, ctx, o):
                 Draw_Text_AlignCenter(o[0], o[1]+op.gestual_pad_rad*.5, "Size", ts_13)
                 DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15), (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
                 Draw_Text_AlignCenter(o[0], o[1]-op.gestual_pad_rad*.3, str(op.get_brush_size()), ts_16)
-    elif not op.coloring and not op.toolbar.hovered_tool and (op.gestual_on_hover or (op.ctrealidx >= num_buttons or op.ctrealidx < 0)):
+    elif not op.coloring and (op.is_gpencil or not op.toolbar.hovered_tool and (op.gestual_on_hover or (op.ctrealidx >= num_buttons or op.ctrealidx < 0))):
         Draw_Text_AlignCenter(o[0], o[1], "P A D", int(op.text_size * 16/12), (.8, .8, .8, .9), False)
         if op.gestual_on_hover:
             DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
 
-    # Ranuras personalizadas.
-    factor = op.gestual_pad_rad / op.color_ring_rad
-    # DiRNGS(o, op.color_ring_rad, factor, 1., .5, (.05, .05, .05, .9))
-    DiRNGS_SPLITANG(o, op.tarta_rad, factor, 1., .6, op.ctnum, op.ctidx, op.theme.pie_color)
-    
-    # Botoncitos tarta.
-    num_tarta_icons = len(op.tarta_icons)
-    Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
-    size = Vector((op.tarta_item_rad, op.tarta_item_rad))
-    half_size = size / 2.0
-    def_bcode = op.none_icon[1]
-    is_brush = op.active_tool_is_brush(ctx)
-    #for i, b in enumerate(op.wheel.custom_buttons):
-    for i in range(0, num_tarta_icons):
-        if op.tarta_icons[i]:
-            bcode = op.tarta_icons[i].bindcode
-        else:
-            bcode = def_bcode
-        DiIMGAMMA_OP(op.tarta_pos[i] - half_size, size, 1.0 if is_brush or i>2 else .35, bcode)
+    if not op.is_gpencil:
+        # Ranuras personalizadas.
+        factor = op.gestual_pad_rad / op.color_ring_rad
+        # DiRNGS(o, op.color_ring_rad, factor, 1., .5, (.05, .05, .05, .9))
+        DiRNGS_SPLITANG(o, op.tarta_rad, factor, 1., .6, op.ctnum, op.ctidx, op.theme.pie_color)
+        
+        # Botoncitos tarta.
+        num_tarta_icons = len(op.tarta_icons)
+        Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
+        size = Vector((op.tarta_item_rad, op.tarta_item_rad))
+        half_size = size / 2.0
+        def_bcode = op.none_icon[1]
+        is_brush = op.active_tool_is_brush(ctx)
+        #for i, b in enumerate(op.wheel.custom_buttons):
+        for i in range(0, num_tarta_icons):
+            if op.tarta_icons[i]:
+                bcode = op.tarta_icons[i].bindcode
+            else:
+                bcode = def_bcode
+            DiIMGAMMA_OP(op.tarta_pos[i] - half_size, size, 1.0 if is_brush or i>2 else .35, bcode)
 
-    DiCLS(o, op.tarta_rad, 50, 2, (.75, .75, .75, .9))
+        DiCLS(o, op.tarta_rad, 50, 2, (.75, .75, .75, .9))
 
     text = None
     space = False
@@ -148,12 +149,12 @@ def draw_callback_px(op, ctx, o):
     if op.coloring:
         text = "%.2f" % round(op.get_brush_weight(),2)
         text_size = int(text_size*16/12)
-    elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx]:
+    elif not op.is_gpencil and op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx]:
         text = op.wheel.custom_buttons[op.ctrealidx].name
         DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx].bindcode, 1.25)
         # y += op.gestual_pad_rad / 2
         space = ' ' in text
-    elif op.toolbar.hovered_tool:
+    elif not op.is_gpencil and op.toolbar.hovered_tool:
         #text = "Tool ________ " + op.toolbar.hovered_tool.label
         if op.draw_tool and op.draw_tool == op.toolbar.hovered_tool and op.wheel.use_add_substract_brush and op.draw_tool_toggle != -1:
             text = 'Add' if op.draw_tool_toggle == ADD else 'Subtract'
@@ -181,6 +182,9 @@ def draw_callback_px(op, ctx, o):
         else:
             Draw_Text_AlignCenter(o[0], o[1], text, text_size, (.9, .9, .9, .9), False)
     
+    if op.is_gpencil(ctx):
+        return
+
     op.toolbar.draw(int(op.text_size*10/12))
     
     if op.wheel.use_add_substract_brush and op.draw_tool:

@@ -39,7 +39,7 @@ class PaintWheelPanel(Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX'}
+        return context.mode in {'PAINT_TEXTURE', 'PAINT_VERTEX', 'PAINT_GPENCIL', 'VERTEX_GPENCIL'}
 
     def draw(self, context):
         WheelPreferences.draw(self, context)
@@ -55,7 +55,7 @@ class WeightWheelPanel(Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.mode in {'PAINT_WEIGHT'}
+        return context.mode in {'PAINT_WEIGHT', 'WEIGHT_GPENCIL'}
 
     def draw(self, context):
         WheelPreferences.draw(self, context)

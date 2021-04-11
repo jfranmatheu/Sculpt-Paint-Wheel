@@ -176,7 +176,6 @@ class WheelPreferences(AddonPreferences):
         box.label(text="Other Settings:") 
         box.use_property_split = False
         box.prop(self, 'keep_open', text="Press Again to Close")
-
         
         if is_prefs:
             left_column.separator()
@@ -189,11 +188,9 @@ class WheelPreferences(AddonPreferences):
             props.prop(theme, 'base_color', text="Base Color")
             props.prop(theme, 'pie_color', text="Pie Color")
             props.prop(theme, 'pad_color', text="PAD Color")
-            
 
             #layout.operator('io.backup_all_addon_data', text="Back-Up addon data", icon='TEMP')
 
-        
         '''
         layout = self.layout
         #kmi = context.window_manager.keyconfigs.addon.keymaps['Sculpt'].keymap_items.get('sculpt.wheel', None)

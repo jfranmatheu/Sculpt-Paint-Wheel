@@ -31,7 +31,7 @@ class SculptWheelPanel(Panel):
 class PaintWheelPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_context = ".paint_common"
+    #bl_context = ".paint_common"
     bl_category = 'Paint'
 
     bl_idname = "PAINT_PT_wheel"
@@ -47,7 +47,7 @@ class PaintWheelPanel(Panel):
 class WeightWheelPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_context = ".paint_common"
+    #bl_context = ".paint_common"
     bl_category = 'Weight'
 
     bl_idname = "WEIGHT_PT_wheel"

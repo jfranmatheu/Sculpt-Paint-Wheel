@@ -7,6 +7,8 @@ from gpu_extras.batch import batch_for_shader as bat
 from bgl import *
 from .gpu_shaders import ShaderType as SType,Shader2D,SH,Shader3D,ShaderGeom as SGeom
 from .gl_fun import *
+
+#from .state import * # NEW API GIVE WRONG RESULTS LMAO...
 def DiPLight(_c,_r,_co,s=SH.PLIGHT()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));s.bind();s.uniform_float(_A,_co);b.draw(s);RstPointBlend()
 def DiCFS(_c,_r,_co,s=SH.CFS()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));s.bind();s.uniform_float(_A,_co);b.draw(s);RstPointBlend()
 def DiCFSs(_r,_co,_cs):s=SH.CFS();SetPointBlend(_r*2);b=bat(s,SType.POINTS(),{'p':_cs});s.bind();s.uniform_float(_A,_co);b.draw(s);RstPointBlend()

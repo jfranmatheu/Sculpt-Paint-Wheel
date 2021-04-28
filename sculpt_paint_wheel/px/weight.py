@@ -182,7 +182,7 @@ def draw_callback_px(op, ctx, o):
         else:
             Draw_Text_AlignCenter(o[0], o[1], text, text_size, (.9, .9, .9, .9), False)
     
-    if op.is_gpencil(ctx):
+    if op.is_gpencil:
         return
 
     op.toolbar.draw(int(op.text_size*10/12))

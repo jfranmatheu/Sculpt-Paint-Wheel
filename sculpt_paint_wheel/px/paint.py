@@ -54,6 +54,9 @@ def draw_callback_px(op, ctx, o):
         # Tapar/overlay para desactivar el pk.
         if op.is_gpencil and not op.gpencil_use_color:
             DiCFS(o, op.color_ring_rad+5, (.1, .1, .1, .8))
+            Draw_Text_AlignCenter(o[0], o[1]+op.rad*.15, "Not available in", ts_13, (.92, .92, .92, .66))
+            Draw_Text_AlignCenter(o[0], o[1]+op.rad*-.15, "Material Paint Mode", ts_13, (.92, .92, .92, .66))
+            
     else:
         if op.is_sliding_type == SIZE:
             Draw_Text_AlignCenter(o[0], o[1]+op.rad*.3, "Size", ts_16)

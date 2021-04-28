@@ -1,4 +1,4 @@
-from . gl_fun import SetBlend, RstBlend
+from . state import SetBlend, RstBlend
 from . gpu_shaders import Shader2D, ShaderType
 from bgl import glActiveTexture, glBindTexture, GL_TEXTURE_2D, GL_TEXTURE0
 from . dibuix import bat

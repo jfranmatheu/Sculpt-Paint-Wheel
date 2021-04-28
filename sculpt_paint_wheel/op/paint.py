@@ -244,6 +244,8 @@ class PAINT_OT_wheel(Operator):
                 self.gpencil_use_color = mode_settings.color_mode == 'VERTEXCOLOR' ## :-)))))))
             else:
                 self.gpencil_use_color = True
+        else:
+            self.gpencil_use_color = False
 
         self.prefs = get_prefs(context)
         self.can_close = not self.prefs.keep_open
@@ -318,7 +320,7 @@ class PAINT_OT_wheel(Operator):
             return lerp(0.5, 1.0, size/500)
 
     def update_size_handler(self, angle=-1):
-        start = self.pos + Vector((0, self.rad))
+        start = self.pos + Vector((0, self.rad)) 
         if angle == -1:
             factor = self.evaluate_steps_magic(self.brush_size)
             #print(factor)
@@ -359,7 +361,7 @@ class PAINT_OT_wheel(Operator):
         Cursor.set_icon(ctx, CursorIcon.NONE if enable else CursorIcon.PAINT_CROSS)
         if enable:
             self.prev_color = self.active_tool.color.copy()
-        
+    
     def get_brush_size(self):
         #if not self.active_tool:
         #    return self.prev_brush_size

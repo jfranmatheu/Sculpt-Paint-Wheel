@@ -29,15 +29,18 @@ class SCULPT_OT_wheel(Operator):
         Cursor.set_icon(context, CursorIcon.DEFAULT)
 
         for icon in self.icons_others:
-            clear_image(icon[0])
+            if icon:
+                clear_image(icon[0])
             # remove_image(icon)
         
         for icon in self.icons:
-            clear_image(icon[0])
+            if icon:
+                clear_image(icon[0])
             # remove_image(icon)
         
         for icon in self.tarta_icons:
-            clear_image(icon[0])
+            if icon:
+                clear_image(icon[0])
             # remove_image(icon)
         
         clear_image(self.none_icon[0])

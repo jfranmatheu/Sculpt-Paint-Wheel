@@ -177,7 +177,7 @@ def draw_callback_px(op, ctx, o):
             #for i, b in enumerate(op.wheel.custom_buttons):
             def_bcode = op.none_icon[1]
             for i in range(0, num_tarta_icons):
-                if op.tarta_icons[i][0]:
+                if op.tarta_icons[i]:
                     bcode = op.tarta_icons[i][1]
                 else:
                     bcode = def_bcode
@@ -200,7 +200,7 @@ def draw_callback_px(op, ctx, o):
                 else:
                     space = ' ' in text
 
-            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx][0]: #num_buttons:
+            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx]: #num_buttons:
                 text = op.wheel.custom_buttons[op.ctrealidx].name
                 DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
                 # y += op.gestual_pad_rad / 2

@@ -575,7 +575,6 @@ class SCULPT_OT_wheel(Operator):
             if ico:
                 if not ico.name.startswith('.'):
                     ico.name = '.' + ico.name
-                ico.gl_load()
                 self.tarta_icons.append((ico, gpu_texture_from_image(ico)))
             else:
                 self.tarta_icons.append(None)

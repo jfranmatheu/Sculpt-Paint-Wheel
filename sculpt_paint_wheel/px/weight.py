@@ -162,7 +162,7 @@ def draw_callback_px(op, ctx, o):
     if op.coloring:
         text = "%.2f" % round(op.get_brush_weight(),2)
         text_size = int(text_size*16/12)
-    elif not op.is_gpencil and op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx][0]:
+    elif not op.is_gpencil and op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx]:
         text = op.wheel.custom_buttons[op.ctrealidx].name
         DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
         # y += op.gestual_pad_rad / 2

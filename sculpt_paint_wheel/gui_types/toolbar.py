@@ -4,6 +4,7 @@ from .. gpu.text import Draw_Text_AlignCenter
 import bpy
 from os.path import exists
 from bpy.types import Image
+from gpu.texture import from_image as gpu_texture_from_image
 
 
 class Tool():
@@ -17,6 +18,7 @@ class Tool():
         self.offset = Vector((0, 0))
         self.tool_icon = tool_icon
         self.icon = None
+        self.texture = None
         self.is_on_hover = False
         self.flags = flags
     
@@ -47,8 +49,9 @@ class Tool():
         else:
             icon = self.tool_icon()
             if icon:
-                icon.gl_load()
+                #icon.gl_load()
                 self.icon = icon
+                self.texture = gpu_texture_from_image(icon)
         '''
         if self.icon_path and exists(self.icon_path):
             icon = load_image_from_filepath(self.icon_path)
@@ -66,6 +69,7 @@ class Tool():
             
             # FIX BUG: ReferenceError: StructRNA of type Image has been removed
             self.icon = None
+            self.texture = None
     
     def on_hover(self, mouse, size) -> bool:
         is_on_hover = point_inside_rect(mouse, self.pos, size)
@@ -99,9 +103,9 @@ class Tool():
         DiCFCL(self.center, r, co, (.4, .4, .4, .9))
         if self.icon:
             if self.is_on_hover:
-                DiIMGA_Intensify(self.pos, s, self.icon.bindcode, 1.5)
+                DiIMGA_Intensify(self.pos, s, self.texture, 1.5)
             else:
-                DiIMGAMMA_OP(self.pos, s, .9, self.icon.bindcode)
+                DiIMGAMMA_OP(self.pos, s, .9, self.texture)
         else:
             Draw_Text_AlignCenter(*self.center, self.label, ts)
 

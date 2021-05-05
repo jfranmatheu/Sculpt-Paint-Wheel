@@ -12,6 +12,7 @@ from math import radians
 from .. gui_types.toolbar import Toolbar
 from bl_ui.properties_paint_common import UnifiedPaintPanel
 from .. utils.checkers import *
+from gpu.texture import from_image as gpu_texture_from_image
 
 
 weight_toolbar = Toolbar(rows_cols=2)
@@ -53,7 +54,7 @@ class WEIGHT_OT_wheel(Operator):
         if not self.is_gpencil:
             for icon in self.tarta_icons:
                 if icon:
-                    clear_image(icon)
+                    clear_image(icon[0])
  
             clear_image(self.none_icon[0])
             
@@ -323,7 +324,7 @@ class WEIGHT_OT_wheel(Operator):
                     if not ico.name.startswith('.'):
                         ico.name = '.' + ico.name
                     ico.gl_load()
-                    self.tarta_icons.append(ico)
+                    self.tarta_icons.append((ico, gpu_texture_from_image(ico)))
                 else:
                     self.tarta_icons.append(None)
 

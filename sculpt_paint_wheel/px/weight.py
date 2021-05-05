@@ -8,6 +8,8 @@ from .. gpu.text import (
 )
 from .. gpu.image import Draw_Image
 
+from .. gpu.gl_fun import SetLineSBlend, RstLineSBlend
+
 
 DEBUG = False
 
@@ -27,15 +29,15 @@ def draw_callback_px(op, ctx, o):
         return
     
     DiCFS(o, op.rad, op.theme.base_color)
-    
-    RstColorSpace()
-    SetBlend()
 
     # Linea del circulo grande.
-    DiCLS(o, op.rad-6, 64, 2., (.4, .4, .4, .95))
-    DiCLS(o, op.rad-8, 64, 2.5, (.05, .05, .05, .95))
+    #DiCLS(o, op.rad-6, 64, 2., (.4, .4, .4, .95))
+    #DiCLS(o, op.rad-8, 64, 2.5, (.05, .05, .05, .95))
+    DiRNGBLR(o, op.rad-6, .01, .005, (.24, .24, .24, .95))
+    DiRNGBLR(o, op.rad-8, .01, .005, (.05, .05, .05, .95))
 
     if op.gestual_sabe_dir and op.prefs.gesturepad_mode == 'PREVIEW':
+        SetLineSBlend(1.5)
         if (op.gesto_dir == HORIZONTAL and not op.invert_gestodir) or (op.gesto_dir == VERTICAL and op.invert_gestodir):
             value = op.get_brush_strength()
             # max
@@ -56,16 +58,22 @@ def draw_callback_px(op, ctx, o):
             Draw_Text_AlignCenter(o[0], o[1]+op.rad*.64, "Size", 24)
             # DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15), (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
             Draw_Text_AlignCenter(o[0], o[1], str(value), 24)
+        RstLineSBlend()
         return
 
     # Anillo.
     #c = colorsys.rgb_to_hsv(0, 1, 1)
     #DiANILLOTONO(o, op.color_ring_rad, float(c[1]), float(c[2]))
     DiANILLOW(o, op.color_ring_rad)
+
+    RstColorSpace()
+    SetBlend()
+    
     if op.wheel.show_markers:
         ts_10 = int(op.text_size*10/12)
         SetLineSBlend(2.2)
         DiLs_((.9, .9, .9, 1), *op.marker_lines)
+        RstLineSBlend()
         if op.wheel.use_interactable_markers:
             DiCFCLs(op.marker_button_rad, (.05, .05, .05, .95), (.4, .4, .4, .95), op.marker_buttons)
             for i, p in enumerate(op.marker_buttons):
@@ -81,12 +89,15 @@ def draw_callback_px(op, ctx, o):
     DiL(*op.color_handle_line)
     SetLineSBlend(2.6)
     DiL(*op.color_handle_line, (1, 1, 1, 1))
-    
+    RstLineSBlend()
 
     num_buttons = 8 #len(op.wheel.custom_buttons)
-    DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color if not op.is_gpencil else (.1, .1, .1, .85), (.7, .7, .7, 1))
+    #DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color if not op.is_gpencil else (.1, .1, .1, .85), (.7, .7, .7, 1))
+    DiCFS(o, op.gestual_pad_rad, op.theme.pad_color if not op.is_gpencil else (.1, .1, .1, .85))
+    DiRNGBLR(o, op.gestual_pad_rad, .05, .02, (.7, .7, .7, 1))
     if op.gestual:
-        DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
+        #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
+        DiRNGBLR(o, op.gestual_pad_rad, .075, .01, (1, 0, 1, .95))
         if not op.gestual_sabe_dir:
             ts = int(op.text_size * 11/12)
             Draw_Text_AlignCenter(o[0], o[1]+10, "↕ Size ↕", ts) # ⭥ ⇕ ⇳ ᛨ ⭥ 🡙 ↨ ⮃ ⮁ ⇵ ⇅
@@ -105,7 +116,8 @@ def draw_callback_px(op, ctx, o):
     elif not op.coloring and (op.is_gpencil or not op.toolbar.hovered_tool and (op.gestual_on_hover or (op.ctrealidx >= num_buttons or op.ctrealidx < 0))):
         Draw_Text_AlignCenter(o[0], o[1], "P A D", int(op.text_size * 16/12), (.8, .8, .8, .9), False)
         if op.gestual_on_hover:
-            DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
+            DiRNGBLR(o, op.gestual_pad_rad, .075, .01, (1, 0, 1, .95))
+            #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
 
     if not op.is_gpencil:
         # Ranuras personalizadas.
@@ -123,12 +135,13 @@ def draw_callback_px(op, ctx, o):
         #for i, b in enumerate(op.wheel.custom_buttons):
         for i in range(0, num_tarta_icons):
             if op.tarta_icons[i]:
-                bcode = op.tarta_icons[i].bindcode
+                bcode = op.tarta_icons[i][1] # takes texture. #.bindcode
             else:
                 bcode = def_bcode
             DiIMGAMMA_OP(op.tarta_pos[i] - half_size, size, 1.0 if is_brush or i>2 else .35, bcode)
 
-        DiCLS(o, op.tarta_rad, 50, 2, (.75, .75, .75, .9))
+        #DiCLS(o, op.tarta_rad, 50, 2, (.75, .75, .75, .9))
+        DiRNGBLR(o, op.tarta_rad, .025, .01, (.75, .75, .75, .9))
 
     text = None
     space = False
@@ -149,9 +162,9 @@ def draw_callback_px(op, ctx, o):
     if op.coloring:
         text = "%.2f" % round(op.get_brush_weight(),2)
         text_size = int(text_size*16/12)
-    elif not op.is_gpencil and op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx]:
+    elif not op.is_gpencil and op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_buttons and op.tarta_icons[op.ctrealidx][0]:
         text = op.wheel.custom_buttons[op.ctrealidx].name
-        DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx].bindcode, 1.25)
+        DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
         # y += op.gestual_pad_rad / 2
         space = ' ' in text
     elif not op.is_gpencil and op.toolbar.hovered_tool:

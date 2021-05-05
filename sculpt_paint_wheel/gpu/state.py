@@ -1,6 +1,5 @@
 from gpu.state import *
 
-
 __all__ = [
 'GetActiveFrameBuffer',
 'GetViewport',

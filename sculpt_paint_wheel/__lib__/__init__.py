@@ -394,7 +394,7 @@ if __main__ == 'sculpt_paint_wheel':
   {
     float S = mix(0, 1, gl_PointCoord.x);
     float V = mix(1, 0, gl_PointCoord.y);
-    fragColor.rgb = hsv2rgb(vec3(h, S, V)); //pow(hsv2rgb(vec3(h, S, V)), vec3(2.2));
+    fragColor.rgb = pow(hsv2rgb(vec3(h, S, V)), vec3(2.2)); // hsv2rgb(vec3(h, S, V)); //
     fragColor.a = 1.0;
   }
   """
@@ -445,7 +445,7 @@ if __main__ == 'sculpt_paint_wheel':
     // and the Saturation to the radius
     vec3 co = hsb2rgb(vec3((angle/TWO_PI)+0.5, s, v));
     // fragColor.rgb = co;
-    fragColor.rgb = co; //pow(co, vec3(2.2));
+    fragColor.rgb = pow(co, vec3(2.2)); // co
     fragColor.a = alpha;
   }
   """
@@ -578,7 +578,7 @@ if __main__ == 'sculpt_paint_wheel':
     
     //vec3 co = vec3(cxy.x, cxy.y, 1.0);
     
-    fragColor.rgb = co; //pow(co, vec3(2.2));
+    fragColor.rgb = pow(co, vec3(2.2)); // co
     fragColor.a = alpha;
   }
   """

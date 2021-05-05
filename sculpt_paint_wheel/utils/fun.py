@@ -127,7 +127,7 @@ def angle_between(v1, v2):
 def clear_image(image):
     if not image:
         return
-    image.gl_free()  # free opengl image memory
+    image.gl_free()  # free opengl image memory # Probably will be deprecated.
     image.buffers_free()
     image.user_clear()
 

@@ -8,6 +8,7 @@ from .. data.icons import get_button_icon, ButtonIcon, get_tool_icon, DefToolIma
 from .. utils import * #CursorIcon, Cursor, Anim, Ease, rotate_point_around_point, clear_image
 from .. addon.prefs import get_prefs
 from math import radians
+from gpu.texture import from_image as gpu_texture_from_image
 
 brush_idname_exceptions = {'MULTIPLANE_SCRAPE', 'TOPOLOGY'}
 
@@ -28,15 +29,15 @@ class SCULPT_OT_wheel(Operator):
         Cursor.set_icon(context, CursorIcon.DEFAULT)
 
         for icon in self.icons_others:
-            clear_image(icon)
+            clear_image(icon[0])
             # remove_image(icon)
         
         for icon in self.icons:
-            clear_image(icon)
+            clear_image(icon[0])
             # remove_image(icon)
         
         for icon in self.tarta_icons:
-            clear_image(icon)
+            clear_image(icon[0])
             # remove_image(icon)
         
         clear_image(self.none_icon[0])
@@ -507,8 +508,8 @@ class SCULPT_OT_wheel(Operator):
                     ico = DefToolImage.DEFAULT()
                 if not ico.name.startswith('.'):
                     ico.name = '.' + ico.name
-                ico.gl_load()
-                self.icons.append(ico)
+
+                self.icons.append((ico, gpu_texture_from_image(ico)))
 
         self.toolset_pos = []
         self.toolset_rad = 6 * wheel_rad / 180 * self.dpi_factor
@@ -572,7 +573,7 @@ class SCULPT_OT_wheel(Operator):
                 if not ico.name.startswith('.'):
                     ico.name = '.' + ico.name
                 ico.gl_load()
-                self.tarta_icons.append(ico)
+                self.tarta_icons.append((ico, gpu_texture_from_image(ico)))
             else:
                 self.tarta_icons.append(None)
         self.tarta_pos = []
@@ -595,12 +596,12 @@ class SCULPT_OT_wheel(Operator):
 
         # Button: Toggle Mode.
         self.icons_others = []
-        ico, id = get_button_icon(ButtonIcon.EDIT)
-        self.icons_others.append(ico)
+        ico, gpu_texture = get_button_icon(ButtonIcon.EDIT)
+        self.icons_others.append((ico, gpu_texture_from_image(ico)))
         rad = 16 * wheel_rad / 180 * self.dpi_factor
         left = origin - Vector((self.rad + rad * 2 + 10, 0))
         pos = rotate_point_around_point(origin, left, radians(45))
-        but_mode_toggle = ButtonCircle(pos, rad, (.9, .9, .9, .65), id, self.toggle_mode)
+        but_mode_toggle = ButtonCircle(pos, rad, (.9, .9, .9, .65), gpu_texture, self.toggle_mode)
         self.outsider_buttons.append(but_mode_toggle)
 
         self.ctx_area = context.area

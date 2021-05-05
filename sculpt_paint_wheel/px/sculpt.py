@@ -7,6 +7,7 @@ from .. gpu.text import (
     Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim
 )
 from .. gpu.image import Draw_Image
+from .. gpu.gl_fun import SetLineSBlend, RstLineSBlend
 
 
 DEBUG = False
@@ -47,6 +48,8 @@ def draw_callback_px(op, ctx, o):
     #glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex)
     RstColorSpace()
     SetBlend()
+
+    Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
     
     #glBindTexture(GL_TEXTURE_2D,0)
     #glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -54,8 +57,10 @@ def draw_callback_px(op, ctx, o):
     #glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST)
     if EDIT_MODE:
         # Linea del circulo grande. (Modo Edición)
-        DiCLS(o, op.rad-8, 64, 1.5, (.95, .5, .15, .95))
-        DiCLS(o, op.rad-8, 64, 1.5, (.95, .5, .15, .95))
+        #DiCLS(o, op.rad-8, 64, 1.5, (.95, .5, .15, .95))
+        #DiCLS(o, op.rad-8, 64, 1.5, (.95, .5, .15, .95))
+        DiRNGBLR(o, op.rad-4, .02, .01, (.95, .5, .15, .95))
+        DiRNGBLR(o, op.rad-6, .02, .01, (.95, .6, .25, .95))
         
         # Herramientas.
         Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
@@ -67,7 +72,7 @@ def draw_callback_px(op, ctx, o):
                 if op.moving and i == op.moving_tool_index:
                     pass
                 else:
-                    DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i].bindcode)
+                    DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i][1]) # take gpu texture index.
                 n -= 1
 
         # Modal: estás moviendo una tool de sitio.
@@ -75,7 +80,7 @@ def draw_callback_px(op, ctx, o):
             DiCFCL(op.mouse_pos, dec_tool_rad, (.24, .24, .24, .65), (.8, .8, .8, .2))
             p = (op.mouse_pos[0] - dec_tool_rad, op.mouse_pos[1] - dec_tool_rad)
             
-            DiIMGAMMA_OP(p, x2_dec_tool_rad, .8, op.icons[op.moving_tool_index].bindcode)
+            DiIMGAMMA_OP(p, x2_dec_tool_rad, .8, op.icons[op.moving_tool_index][1])
             if op.moving_remove:
                 DiCFCL(op.mouse_pos, dec_tool_rad, (1, 0, 0, .5), (1, .2, .2, .8))
 
@@ -83,10 +88,13 @@ def draw_callback_px(op, ctx, o):
         tools = op.active_toolset.tools
         num_tools = len(tools)
         # Linea del circulo grande.
-        DiCLS(o, op.rad-6, 64, 2., (.4, .4, .4, .95))
-        DiCLS(o, op.rad-8, 64, 2.5, (.05, .05, .05, .95))
+        #DiCLS(o, op.rad-6, 64, 2., (.4, .4, .4, .95))
+        #DiCLS(o, op.rad-8, 64, 2.5, (.05, .05, .05, .95))
+        DiRNGBLR(o, op.rad-6, .02, .01, (.4, .4, .4, .95))
+        DiRNGBLR(o, op.rad-8, .02, .01, (.05, .05, .05, .95))
 
         if op.gestual_sabe_dir and op.prefs.gesturepad_mode == 'PREVIEW':
+            SetLineSBlend(1.5)
             if (op.gesto_dir == HORIZONTAL and not op.invert_gestodir) or (op.gesto_dir == VERTICAL and op.invert_gestodir):
                 value = op.get_brush_strength()
                 # max
@@ -107,6 +115,7 @@ def draw_callback_px(op, ctx, o):
                 Draw_Text_AlignCenter(o[0], o[1]+op.rad*.64, "Size", 24)
                 # DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15), (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
                 Draw_Text_AlignCenter(o[0], o[1], str(value), 24)
+            RstLineSBlend()
             return
 
         # Rueda cromática.
@@ -128,9 +137,12 @@ def draw_callback_px(op, ctx, o):
         # Tool.
         else:
             num_buttons = len(op.wheel.custom_buttons)
-            DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color, (.7, .7, .7, 1))
+            #DiCFCL(o, op.gestual_pad_rad, op.theme.pad_color, (.7, .7, .7, 1))
+            DiCFS(o, op.gestual_pad_rad, op.theme.pad_color)
+            DiRNGBLR(o, op.gestual_pad_rad, .05, .02, (.7, .7, .7, 1))
             if op.gestual:
-                DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
+                DiRNGBLR(o, op.gestual_pad_rad, .075, .01, (1, 0, 1, .95))
+                #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
                 if not op.gestual_sabe_dir:
                     ts = int(op.text_size * 11/12)
                     Draw_Text_AlignCenter(o[0], o[1]+10, "↕ Size ↕", ts) # ⭥ ⇕ ⇳ ᛨ ⭥ 🡙 ↨ ⮃ ⮁ ⇵ ⇅
@@ -149,7 +161,8 @@ def draw_callback_px(op, ctx, o):
             elif op.active_tool_is_brush and (op.gestual_on_hover or ((op.ctrealidx >= num_buttons or op.ctrealidx < 0) and op.on_hover_tool_index == -1)):
                 Draw_Text_AlignCenter(o[0], o[1], "P A D", int(op.text_size * 16/12), (.8, .8, .8, .9), False)
                 if op.gestual_on_hover:
-                    DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
+                    DiRNGBLR(o, op.gestual_pad_rad, .075, .01, (1, 0, 1, .95))
+                    #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
 
             # Ranuras personalizadas.
             factor = op.gestual_pad_rad / op.color_ring_rad
@@ -164,13 +177,14 @@ def draw_callback_px(op, ctx, o):
             #for i, b in enumerate(op.wheel.custom_buttons):
             def_bcode = op.none_icon[1]
             for i in range(0, num_tarta_icons):
-                if op.tarta_icons[i]:
-                    bcode = op.tarta_icons[i].bindcode
+                if op.tarta_icons[i][0]:
+                    bcode = op.tarta_icons[i][1]
                 else:
                     bcode = def_bcode
                 DiIMGA(op.tarta_pos[i] - half_size, size, bcode)
 
-            DiCLS(o, op.color_ring_rad, 50, 2, (.75, .75, .75, .9))
+            DiRNGBLR(o, op.color_ring_rad, .025, .01, (.75, .75, .75, .9))
+            #DiCLS(o, op.color_ring_rad, 50, 2, (.75, .75, .75, .9))
 
             text = None
             space = False
@@ -186,9 +200,9 @@ def draw_callback_px(op, ctx, o):
                 else:
                     space = ' ' in text
 
-            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx]: #num_buttons:
+            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx][0]: #num_buttons:
                 text = op.wheel.custom_buttons[op.ctrealidx].name
-                DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx].bindcode, 1.25)
+                DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
                 # y += op.gestual_pad_rad / 2
                 space = ' ' in text
 
@@ -241,10 +255,10 @@ def draw_callback_px(op, ctx, o):
                 DiIMGA_Intensify (
                     (p[0] - dec_tool_rad, p[1] - dec_tool_rad),
                     x2_dec_tool_rad,
-                    op.icons[a_idx].bindcode, 1.25
+                    op.icons[a_idx][1], 1.25
                 )
             else:
-                DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i].bindcode)
+                DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i][1])
             n -= 1
 
         if op.on_hover_tool_index != -1:
@@ -263,7 +277,7 @@ def draw_callback_px(op, ctx, o):
                     DiIMGA_Intensify (
                         (p[0] - dec_tool_rad, p[1] - dec_tool_rad),
                         x2_dec_tool_rad,
-                        op.icons[op.on_hover_tool_index].bindcode, 1.25
+                        op.icons[op.on_hover_tool_index][1], 1.25
                     )
 
         # Nombres de Herramientas.

@@ -4,7 +4,7 @@ import colorsys
 from .. utils.fun import smoothstep, rotate_point_around_point, direction_from_to
 from math import pi, radians
 from mathutils import Vector
-from .. gpu.text import Draw_Text, Draw_Text_AlignCenter, Draw_Text_Right
+from .. gpu.text import Draw_Text, Draw_Text_AlignCenter, Draw_Text_Right, SetFontSize, GetFontDim
 
 
 PI_4 = pi / 4

@@ -4,7 +4,7 @@ import colorsys
 from .. utils.fun import get_point_in_circle_from_angle, smoothstep, Vector, direction_from_to, distance_between
 from math import pi
 from .. gpu.text import (
-    Draw_Text, Draw_Text_AlignCenter
+    Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim
 )
 from .. gpu.image import Draw_Image
 

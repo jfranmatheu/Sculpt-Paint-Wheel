@@ -1,3 +1,17 @@
+from blf import *
+
+def SetFontColor(id,co=(1,1,1,1)):color(id,co)
+def GetFontDim(id,txt):return dimensions(id,txt)
+def SetFontShadow(id,off_x=-1,off_y=-2,lvl=3,co=(0,0,0,1)):enable(id,SHADOW);shadow(id,lvl,*co);shadow_offset(id,off_x,off_y)
+def RstFontShadow(id):disable(id,SHADOW)
+def SetFontWW(id,width):enable(id,WORD_WRAP);word_wrap(id,width)
+def RstFontWW(id):disable(id,WORD_WRAP)
+def SetFontClip(id,xi,xf,yi,yf):enable(id,CLIPPING);clipping(id,xi,xf,yi,yf)
+def RstFontCLip(id):disable(id,CLIPPING)
+def SetFontRot(id,a):enable(id,ROTATION);rotation(id,a)
+def RstFontRot(id):disable(id,ROTATION)
+def SetFontSize(id,_size,_dpi):size(id,_size,_dpi)
+
 from blf import (
     enable as text_enable, disable as text_disable,
     SHADOW, shadow as text_shadow, shadow_offset as text_shadow_offset,
@@ -5,7 +19,6 @@ from blf import (
     dimensions as text_dim, draw as text_draw, ROTATION, rotation as text_rotation,
     clipping as text_clipping, CLIPPING, KERNING_DEFAULT, WORD_WRAP, MONOCHROME
 )
-
 
 def Draw_Text(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, _a = 1, _use_shadow = False):
     if _use_shadow:

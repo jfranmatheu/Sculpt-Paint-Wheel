@@ -8,6 +8,10 @@ import bpy
 blender_icons_path = join(dirname(dirname(__file__)), 'images', 'blender', 'tile234.png')
 
 
+def get_tool_index(tool):
+    return tool.index
+
+
 class WheelColorPicker(PropertyGroup):
     type : EnumProperty(
         items = (
@@ -21,6 +25,11 @@ class WheelColorPicker(PropertyGroup):
 
     def show_context_menu(self):
         OP.wm.call_panel(name="SCULPTWHEEL_PT_show_color_picker_context_menu", keep_open=True)
+
+class Tool:
+    def __init__(self, tool) -> None:
+        self.tool = tool
+        self.is_brush = not isinstance(str, tool)
 
 class WheelTool(PropertyGroup):
     def update_tool(self, context):
@@ -45,6 +54,7 @@ class WheelTool(PropertyGroup):
     tool : PointerProperty(type=Brush, update=update_tool)
     prev_tool : PointerProperty(type=Brush)
     idname : StringProperty()
+    order : IntProperty(name="Index-Order", default=0, min=0)
 
     def show_context_menu(self):
         if not self.tool:
@@ -88,6 +98,7 @@ class WheelToolset(PropertyGroup):
 
     update_flag : BoolProperty(default=True)
     export_on_save : BoolProperty(default=False, description="Save toolset data when saving .blend file (Ctrl+S)")
+    #global_overwrite : BoolProperty(default=False, description="Global brushes will over-write blendfile brushes that match the name")
 
     def load_default_tools(self):
         from bpy import data as D
@@ -98,6 +109,7 @@ class WheelToolset(PropertyGroup):
                 tool.name = data[1]
 
     def add_tool(self, tool, is_brush=True):
+        order = (len(self.tools) - 1)
         if is_brush:
             if not isinstance(tool, Brush):
                 return
@@ -111,6 +123,7 @@ class WheelToolset(PropertyGroup):
             new_tool.name = tool.name
             new_tool.tool = tool
             new_tool.prev_tool = tool
+            tool['order'] = order
         else:
             if not tool:
                 return
@@ -118,6 +131,7 @@ class WheelToolset(PropertyGroup):
             new_tool.idname = tool
             new_tool.name = tool.split('.')[1].replace('_', ' ').capitalize()
         
+        new_tool.order = order
         return new_tool
 
     def get_tool(self, name):
@@ -139,7 +153,7 @@ class WheelToolset(PropertyGroup):
             ctx.tool_settings.sculpt.brush = self.tools[index].tool
 
     def swap_tools(self, t1, t2):
-        from .. utils import swap
+        #from .. utils import swap
         '''
         n = len(self.tools)
         if t1 < 0 or t2 > n:
@@ -150,10 +164,20 @@ class WheelToolset(PropertyGroup):
         # self.tools[t1], self.tools[t2] = self.tools[t2], self.tools[t1]
         temp_tool = self.tools[t1].tool
         temp_name = self.tools[t1].name
+        temp_index = self.tools[t1].order
+
+        if self.tools[t1].tool:
+            self.tools[t1].tool['order'] = self.tools[t2].order
+        if self.tools[t2].tool:
+            self.tools[t2].tool['order'] = temp_index
+        self.tools[t1].order = self.tools[t2].order
+        self.tools[t2].order = temp_index
+
         self.tools[t1].tool = self.tools[t2].tool
         self.tools[t1].name = self.tools[t2].name
         self.tools[t2].tool = temp_tool
         self.tools[t2].name = temp_name
+
         #swap(self.tools[t1].tool, self.tools[t2].tool)
         #swap(self.tools[t1].name, self.tools[t2].name)
 
@@ -177,6 +201,8 @@ class WheelToolset(PropertyGroup):
         elif isinstance(tool, str):
             self.remove_tool(self.get_tool_index(tool))
 
+        self.ensure_tool_indices()
+
     def search_tool(self, tool):
         for t in self.tools:
             if t.tool == tool:
@@ -190,6 +216,14 @@ class WheelToolset(PropertyGroup):
             return
         self.active_tool = idx
         self.tools[idx].show_context_menu()
+
+    def ensure_tool_indices(self):
+        for idx, tool in enumerate(self.tools):
+            tool['order'] = tool.order = idx
+
+    def sort_tools(self):
+        """ Sort tools using their index. """
+        tools = [Tool(t.tool if t.tool else t.idname) for t in self.tools]
 
 
 class CreateCustomButton(PropertyGroup):

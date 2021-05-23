@@ -1,5 +1,5 @@
 from bpy.types import Operator
-from bpy.props import StringProperty, IntProperty
+from bpy.props import StringProperty, IntProperty, BoolProperty
 from bpy.path import abspath
 
 
@@ -52,10 +52,12 @@ class SCULPT_OT_wheel_add_active_tool(Operator):
         return context.mode == 'SCULPT' and context.scene.sculpt_wheel.active_toolset != -1
 
     def execute(self, context):
+        # Add non-brush tool.
         from bl_ui.properties_paint_common import UnifiedPaintPanel
         if not UnifiedPaintPanel.paint_settings(context):
             context.scene.sculpt_wheel.get_active_toolset().add_tool(context.workspace.tools.from_space_view3d_mode('SCULPT').idname, False)
             return {'FINISHED'}
+        # Add brush tool.
         brush = context.tool_settings.sculpt.brush
         if not brush:
             return {'CANCELLED'}
@@ -77,8 +79,10 @@ class SCULPT_OT_wheel_remove_active_toolset(Operator):
     bl_label = "Sculpt Wheel: Remove Active Toolset"
     bl_description = "Remove active toolset"
 
+    remove_globally : BoolProperty(name="Remove Globally", default=True)
+
     def execute(self, context):
-        context.scene.sculpt_wheel.remove_toolset(context.scene.sculpt_wheel.active_toolset)
+        context.scene.sculpt_wheel.remove_toolset(context.scene.sculpt_wheel.active_toolset, self.remove_globally)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_remove_tool(Operator):

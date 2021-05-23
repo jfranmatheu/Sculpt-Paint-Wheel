@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class ToolsManagement():
     def get_active_toolset(self):
         return self.toolsets[self.active_toolset] if self.active_toolset != -1 else None
@@ -27,11 +28,19 @@ class ToolsManagement():
             i += 1
         return -1
 
-    def remove_toolset(self, toolset):
+    def remove_toolset(self, toolset, remove_global: bool = True):
         if isinstance(toolset, int):
-            if toolset != -1:
-                self.toolsets.remove(toolset)
-                self.active_toolset = len(self.toolsets) - 1
-                self.toolset_list = str(self.active_toolset) if self.active_toolset != -1 else 'NONE'
+            if toolset == -1:
+                return
+
+            ts = self.toolsets[toolset]
+            if ts.use_global and remove_global:
+                from .. io.io import remove_sculpt_toolset_from_globals
+                remove_sculpt_toolset_from_globals(None, ts)
+
+            self.toolsets.remove(toolset)
+            self.active_toolset = len(self.toolsets) - 1
+            self.toolset_list = str(self.active_toolset) if self.active_toolset != -1 else 'NONE'
+
         elif isinstance(toolset, str):
             self.remove_toolset(self.get_toolset_index(toolset))

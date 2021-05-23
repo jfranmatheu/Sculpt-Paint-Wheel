@@ -4,6 +4,8 @@ import bpy
 from os.path import dirname, abspath, join, exists, isfile, basename
 from .. file_manager import UserData
 import json
+import re
+from .. import bl_info
 '''
 #user_data_dir = join(dirname(dirname(__file__)), 'user_data')
 from .. import gen_config
@@ -30,6 +32,7 @@ def add_sculpt_toolset_to_globals(context, toolset):
     save_global_sculpt_toolset(context, toolset)
 
 def remove_sculpt_toolset_from_globals(context, toolset):
+    if not context: context = bpy.context
     data_filepath = join(UserData.GLOB_SCULPT_DIR(), "toolsets.json")
     lib_filepath = join(UserData.GLOB_SCULPT_TOOLSETS_DIR(), "%s.blend" % toolset.uuid)
     if exists(lib_filepath) and isfile(lib_filepath):
@@ -78,9 +81,23 @@ def save_global_sculpt_toolset(context, toolset):
                 if json_data and isinstance(json_data, dict):
                     data = json_data
     # Append toolset data to loaded data.
-    data[toolset.uuid] = {'name': toolset.name, 'export_on_save': toolset.export_on_save, 'tools' : [tool.idname for tool in toolset.tools if not tool.tool]}
+    #data[toolset.uuid] = {'name': toolset.name, 'export_on_save': toolset.export_on_save, 'tools' : [tool.idname for tool in toolset.tools if not tool.tool]}
+    data[toolset.uuid] = {
+        'name' : toolset.name,
+        'blender' : bl_info['blender'],
+        'version' : bl_info['version'],
+        'export_on_save': toolset.export_on_save,
+        #'tools' : [tool.idname for tool in toolset.tools if not tool.tool]
+        'tools' : get_tool_list(toolset)
+    }
     # Write modified data back to file.
     write_to_file(data, data_filepath)
+
+def get_tool_list(toolset):
+    tools = []
+    for tool in toolset.tools:
+        tools.append(tool.idname if not tool.tool else "@" + tool.tool.name)
+    return tools
 
 def save_all_global_sculpt_toolsets(context):
     data = {}
@@ -95,8 +112,11 @@ def save_all_global_sculpt_toolsets(context):
         #       and more information should be added as well in a dict form.
         data[toolset.uuid] = {
             'name' : toolset.name,
+            'blender' : bl_info['blender'],
+            'version' : bl_info['version'],
             'export_on_save': toolset.export_on_save,
-            'tools' : [tool.idname for tool in toolset.tools if not tool.tool]
+            #'tools' : [tool.idname for tool in toolset.tools if not tool.tool]
+            'tools' : get_tool_list(toolset)
         }
     
     # Write buttons data to datafile.
@@ -124,8 +144,9 @@ def load_global_sculpt_toolsets(context, toolsets=None):
         for toolset_lib in toolset_libs:
             toolset_id = basename(toolset_lib).split('.')[0]
             if toolset_id not in data:
-                print("[SCULPTWHEEL] ERROR: Toolset %s not in database!" % toolset_id)
+                print("[SCULPTWHEEL] WARN: Toolset %s not in database!" % toolset_id)
                 continue
+
             toolset = sculpt_wheel.add_toolset(data[toolset_id]['name'])
             toolset.update_flag = False
             toolset.uuid = toolset_id
@@ -133,14 +154,35 @@ def load_global_sculpt_toolsets(context, toolsets=None):
             toolset.export_on_save = data[toolset_id]['export_on_save']
             toolset.update_flag = True
             
+
             #import_sculpt_toolset_data_from_lib(context, toolset_lib, overwrite=True, mark_fake_user=False, link=False)
             with bpy.data.libraries.load(toolset_lib, link=False) as (data_from, data_to):
+                '''
+                if toolset.global_overwrite:
+                    for brush in data_from.brushes:
+                        d_brush = bpy.data.brushes.get(brush, None)
+                        if d_brush:
+                            bpy.data.brushes.remove(d_brush)
+                '''
+
                 data_to.brushes = data_from.brushes
             
-            for brush in reversed(data_to.brushes):
-                toolset.add_tool(brush, is_brush=True)
-            for tool in reversed(data[toolset_id]['tools']):
-                toolset.add_tool(tool, is_brush=False)
+            # Tiene que ser fuera del with para mantenerse fuera del flujo de E/S y darle tiempo a que se aplique,
+            # de forma contraria data_to.brushes sería una lista de str en vez nuestra collection de Brush/es.
+            tools = data[toolset_id]['tools']
+            
+            for tool in tools:
+                if tool.startswith('@'):
+                    brush_name = tool[1:]
+                    pattern = brush_name + "\.\d\d\d"
+                    #print("\t-> Looking for Brush <%s>" % brush_name)
+                    for brush in data_to.brushes:
+                        #brush = data_to.brushes.get(tool[1:], None)
+                        #print("\t\t- <%s> -" % brush.name)
+                        if re.search(pattern, brush.name):
+                            toolset.add_tool(brush, is_brush=True)
+                else:
+                    toolset.add_tool(tool, is_brush=False)
 
     print("[SCULPTWHEEL] Successfully loaded global SculptWheel toolsets from", data_filepath)
     return True
@@ -186,7 +228,7 @@ def reload_active_global_toolset(context):
             return False
 
         if toolset_id not in data:
-            print("[SCULPTWHEEL] ERROR: Toolset %s not in database!" % toolset_id)
+            print("[SCULPTWHEEL] WARN: Toolset %s not in database!" % toolset_id)
             return False
         toolset = sculpt_wheel.add_toolset(data[toolset_id]['name'])
         toolset.update_flag = False
@@ -194,16 +236,41 @@ def reload_active_global_toolset(context):
         toolset.use_global = True
         toolset.export_on_save = data[toolset_id]['export_on_save']
         toolset.update_flag = True
-        
+
+        '''
+        # FORCE OVERWRITE EVEN IF IT HAS NO toolset.globa_overwrite active CAUSE
+        if not import_sculpt_toolset_data_from_lib(context, toolset_lib, overwrite=True, mark_fake_user=False, link=False):
+            print("[SCULPTWHEEL] ERROR: Can't reload toolset <%s> from database <%s>!" % (toolset.name, toolset_lib))
+            return False
+
+        '''
         #import_sculpt_toolset_data_from_lib(context, toolset_lib, overwrite=True, mark_fake_user=False, link=False)
         with bpy.data.libraries.load(toolset_lib, link=False) as (data_from, data_to):
+            for brush in data_from.brushes:
+                d_brush = bpy.data.brushes.get(brush, None)
+                if d_brush:
+                    bpy.data.brushes.remove(d_brush)
+            
             data_to.brushes = data_from.brushes
         
-        for brush in reversed(data_to.brushes):
-            toolset.add_tool(brush, is_brush=True)
-        for tool in reversed(data[toolset_id]['tools']):
-            toolset.add_tool(tool, is_brush=False)
-    
+        # Tiene que ser fuera del with para mantenerse fuera del flujo de E/S y darle tiempo a que se aplique,
+        # de forma contraria data_to.brushes sería una lista de str en vez nuestra collection de Brush/es.
+        tools = data[toolset_id]['tools']
+
+        for tool in tools:
+            if tool.startswith('@'):
+                brush_name = tool[1:]
+                pattern = brush_name + "\.\d\d\d"
+                #print("\t-> Looking for Brush <%s>" % brush_name)
+                for brush in data_to.brushes:
+                    #brush = data_to.brushes.get(tool[1:], None)
+                    #print("\t\t- <%s> -" % brush.name)
+                    if re.search(pattern, brush.name):
+                        toolset.add_tool(brush, is_brush=True)
+            else:
+                toolset.add_tool(tool, is_brush=False)
+
+
     return True
 
 def save_active_global_toolset(context):
@@ -290,6 +357,7 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
             lib_name += ".blend"
         lib_filepath = join(UserData.EXPORT_SCULPT_TOOLSETS_DIR(), lib_name)
         if not exists(lib_filepath) or not isfile(lib_filepath):
+            print("[SCULPTWHEEL] ERROR: Toolset-LIB no found <%s>" % lib_filepath)
             return False
     
     # Append every brush.

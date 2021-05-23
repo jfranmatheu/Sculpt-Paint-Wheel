@@ -29,34 +29,40 @@ class SculptWheel_ActiveToolset_Options(Panel):
         toolset = context.scene.sculpt_wheel.get_active_toolset()
         if not toolset:
             return
-        
+
         box = self.layout.box()
-        
+
         box.prop(toolset, 'name', text="Name")
         box.prop(toolset, 'use_global', text="Global Toolset", toggle=False)
-        box.alert=True
+        box.alert = True
         box.label(text="Toolset is GLOBAL" if toolset.use_global else "Toolset is LOCAL", icon="WORLD" if toolset.use_global else "FILE_BLEND")
-        
+
         if toolset.use_global:
             box = self.layout.box()
             row = box.row()
             row.operator('io.save_active_global_toolset', text="Save", icon='FILE_TICK') # (export changes)
             row.operator("io.reload_active_global_toolset", text="Reload", icon='FILE_REFRESH')
             box.prop(toolset, 'export_on_save', text="Save on project save")
+            #box.prop(toolset, 'global_overwrite', text="Overwrite brushes on (re)load")
             #box.operator('io.export_active_toolset', text="Reload (import changes)", icon='FILE_REFRESH')
-        
+
         box = self.layout.box()
         box.operator('io.export_active_toolset', text="Export as Library", icon='EXPORT')
 
         box = self.layout.box()
-        box.alert=True
+        box.alert = True
         box.label(text="Danger Zone", icon='ERROR')
         row = box.row(align=False)
         row.operator('sculpt.wheel_load_default_tools', text="Reset", icon='FILE_REFRESH')
-        row.operator('sculpt.wheel_remove_active_toolset', text="Remove", icon='TRASH')
-        
+        if toolset.use_global:
+            col = box.column(align=True)
+            col.operator('sculpt.wheel_remove_active_toolset', text="Remove Locally", icon='TRASH').remove_globally = False
+            col.operator('sculpt.wheel_remove_active_toolset', text="Remove Globally", icon='TRASH').remove_globally = True
+        else:
+            row.operator('sculpt.wheel_remove_active_toolset', text="Remove", icon='TRASH')
+
         row = self.layout.row()
-        row.enabled=False
+        row.enabled = False
         row.label(text="ID: %s" % toolset.uuid)
 
 

@@ -141,7 +141,7 @@ def load_global_sculpt_toolsets(context, toolsets=None):
         if not data or not isinstance(data, dict):
             return False
         
-        for toolset_lib in toolset_libs:
+        for toolset_lib in reversed(toolset_libs):
             toolset_id = basename(toolset_lib).split('.')[0]
             if toolset_id not in data:
                 print("[SCULPTWHEEL] WARN: Toolset %s not in database!" % toolset_id)
@@ -154,8 +154,10 @@ def load_global_sculpt_toolsets(context, toolsets=None):
             toolset.export_on_save = data[toolset_id]['export_on_save']
             toolset.update_flag = True
             
-
-            #import_sculpt_toolset_data_from_lib(context, toolset_lib, overwrite=True, mark_fake_user=False, link=False)
+            ####################################################
+            # TOOLSET GENERATION ###############################
+            ####################################################
+            
             with bpy.data.libraries.load(toolset_lib, link=False) as (data_from, data_to):
                 '''
                 if toolset.global_overwrite:
@@ -164,16 +166,21 @@ def load_global_sculpt_toolsets(context, toolsets=None):
                         if d_brush:
                             bpy.data.brushes.remove(d_brush)
                 '''
-
                 data_to.brushes = data_from.brushes
+                #print("DATA FROM BRUSHES:", data_from.brushes)
+                #print("DATA TO BRUSHES  :", data_to.brushes)
             
             # Tiene que ser fuera del with para mantenerse fuera del flujo de E/S y darle tiempo a que se aplique,
             # de forma contraria data_to.brushes sería una lista de str en vez nuestra collection de Brush/es.
+            #print("* DATA FROM BRUSHES:", data_from.brushes)
+            #print("* DATA TO BRUSHES  :", data_to.brushes)
             tools = data[toolset_id]['tools']
-            
             for tool in tools:
                 if tool.startswith('@'):
                     brush_name = tool[1:]
+                    # Chequear si es una brush dupli.
+                    if brush_name[-4] == '.' and brush_name[-1].isdigit():
+                        brush_name = brush_name[:-4]
                     pattern = brush_name + "\.\d\d\d"
                     #print("\t-> Looking for Brush <%s>" % brush_name)
                     for brush in data_to.brushes:
@@ -256,10 +263,12 @@ def reload_active_global_toolset(context):
         # Tiene que ser fuera del with para mantenerse fuera del flujo de E/S y darle tiempo a que se aplique,
         # de forma contraria data_to.brushes sería una lista de str en vez nuestra collection de Brush/es.
         tools = data[toolset_id]['tools']
-
         for tool in tools:
             if tool.startswith('@'):
                 brush_name = tool[1:]
+                # Chequear si es una brush dupli.
+                if brush_name[-4] == '.' and brush_name[-1].isdigit():
+                    brush_name = brush_name[:-4]
                 pattern = brush_name + "\.\d\d\d"
                 #print("\t-> Looking for Brush <%s>" % brush_name)
                 for brush in data_to.brushes:
@@ -269,7 +278,6 @@ def reload_active_global_toolset(context):
                         toolset.add_tool(brush, is_brush=True)
             else:
                 toolset.add_tool(tool, is_brush=False)
-
 
     return True
 

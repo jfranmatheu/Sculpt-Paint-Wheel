@@ -11,7 +11,7 @@ class ToolsManagement():
             return
         new_toolset = self.toolsets.add()
         new_toolset.name = name if name != '' else 'Toolset_' + str(n)
-        new_toolset.uuid = datetime.today().strftime('%S%M%H%d%m%Y') # Inverted date and time.
+        new_toolset.uuid = datetime.today().strftime('%Y%m%d%H%M%S') # Inverted date and time.
         self.active_toolset = n
         self.toolset_list = str(n)
         #OP.ed.undo_push(message='Added new toolset')

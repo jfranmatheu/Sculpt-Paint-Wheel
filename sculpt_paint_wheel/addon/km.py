@@ -51,6 +51,7 @@ def get_keyitem_mode(context, mode):
     mode = modes[mode]
     return context.window_manager.keyconfigs.user.keymaps[mode['km']].keymap_items.get(mode['op'], None)
 
+
 def register():
     from bpy import context as C
     cfg = C.window_manager.keyconfigs.addon
@@ -59,7 +60,6 @@ def register():
             cfg.keymaps.new(val['km'], space_type='EMPTY', region_type='WINDOW')
         kmi = cfg.keymaps[val['km']].keymap_items
         kmi.new(val['op'], 'SPACE', 'PRESS')
-
 
 def unregister():
     from bpy import context as C

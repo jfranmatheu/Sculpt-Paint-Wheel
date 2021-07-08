@@ -84,6 +84,7 @@ def update_toolset_name(self, context):
     from .. io.io import update_global_sculpt_toolset_name
     update_global_sculpt_toolset_name(context, self)
 
+
 class WheelToolset(PropertyGroup):
     name : StringProperty(name="Name", default="Toolset", update=update_toolset_name)
     tools : CollectionProperty(type=WheelTool)

@@ -166,6 +166,7 @@ def draw_callback_px(op, ctx, o):
 
             # Ranuras personalizadas.
             factor = op.gestual_pad_rad / op.color_ring_rad
+            print(factor)
             # DiRNGS(o, op.color_ring_rad, factor, 1., .5, (.05, .05, .05, .9))
             DiRNGS_SPLITANG(o, op.color_ring_rad, factor, 1., .6, op.ctnum, op.ctidx, op.theme.pie_color)
 

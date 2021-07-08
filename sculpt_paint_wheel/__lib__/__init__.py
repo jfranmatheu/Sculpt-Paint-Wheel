@@ -314,7 +314,7 @@ if __main__ == 'sculpt_paint_wheel':
 
     float s = roundedFrame(r, 9.5);
     if (s < 0.05)
-      discard;
+      discard; 
 
     // Use polar coordinates instead of cartesian
     vec2 toCenter = vec2(0.5)-gl_PointCoord.xy;

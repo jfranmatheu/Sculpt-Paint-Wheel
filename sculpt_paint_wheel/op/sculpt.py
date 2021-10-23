@@ -673,8 +673,8 @@ class SCULPT_OT_wheel(Operator):
         # self.debug_tool(tool_2)
 
     def rearrange_tools(self, context, moving_tool, in_between_slot):
-        print("Moving Index:", moving_tool)
-        print("In between Slot:", in_between_slot)
+        #print("Moving Index:", moving_tool)
+        #print("In between Slot:", in_between_slot)
         prev_tool = in_between_slot - 1 if in_between_slot > 0 else self.num_tools - 1
         next_tool = in_between_slot + 1 if in_between_slot < self.num_tools - 1 else 0
         sign = distance_between(self.mouse_pos, self.tool_pos[prev_tool]) < distance_between(self.mouse_pos, self.tool_pos[next_tool])
@@ -683,7 +683,7 @@ class SCULPT_OT_wheel(Operator):
             target_tool_idx = self.num_tools - 1
         elif target_tool_idx >= self.num_tools:
             target_tool_idx = 0
-        print("Target Index:", target_tool_idx)
+        #print("Target Index:", target_tool_idx)
         #if moving_tool < target_tool_idx:
         #    lower = moving_tool
         #    greater = target_tool_idx
@@ -715,7 +715,7 @@ class SCULPT_OT_wheel(Operator):
                 next_dir = self.num_tools - 1
             elif next_dir >= self.num_tools:
                 next_dir = 0
-            print(current_index, "- to -", next_dir)
+            #print(current_index, "- to -", next_dir)
             self.add_animation(context, "tool_pos#"+str(current_index), self.tool_pos[next_dir], 0.16)
             #self.icons[current_index], self.icons[next_dir] = self.icons[next_dir], self.icons[current_index]
 

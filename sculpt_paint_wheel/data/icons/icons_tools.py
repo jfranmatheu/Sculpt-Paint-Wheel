@@ -6,7 +6,7 @@ class DefToolImage(Enum):
     # COMMON TOOLS.
     T_SELECT_BOX = "Select_Box"
     T_SELECT_TWEAK = "Select_Tweak"
-    
+
     # WEIGHT PAINT MODE.
     PAINT_DRAW = "Paint_Draw"
     PAINT_BLUR = "Paint_Blur"
@@ -15,7 +15,7 @@ class DefToolImage(Enum):
     PAINT_GRADIENT = "Paint_Gradient"
     PAINT_SAMPLE_WEIGHT = "Paint_Sample_Weight"
     PAINT_SAMPLE_VERTEX_GROUP = "Paint_Sample_Vertex_Group"
-    
+
     # SCULPT MDOE
     DEFAULT = "Default_icon"
     DRAW = 'Draw_icon'
@@ -48,21 +48,21 @@ class DefToolImage(Enum):
     #PAINT = 'Paint_icon'
     #SMEAR = 'Paint_Smear_icon'
     DRAW_FACE_SETS = 'Draw_FaceSets_icon'
-    
+
     T_MESH_FILTER = 'Filter_Mesh_icon'
     T_CLOTH_FILTER = 'Filter_Cloth_icon'
-    
+
     T_BOX_MASK = 'Box_Mask_icon'
     T_BOX_HIDE = 'Box_Hide_icon'
     T_LASSO_MASK = 'Lasso_Mask_icon'
-    
+
     T_TRANSFORM = 'Transform_icon'
     T_MOVE = 'Move_icon'
     T_ROTATE = '_Rotate_icon'
     T_SCALE = 'Scale_icon'
-    
+
     T_ANNOTATE = 'Annotate_icon'
-    
+
     # 2.91
     BOUNDARY = 'Boundary_icon'
     DISPLACEMENT_ERASER = 'Displacement_Eraser_icon'
@@ -74,15 +74,20 @@ class DefToolImage(Enum):
     T_LINE_PROJECT = 'Line_Project_icon'
     T_FACE_SET_EDIT = 'Edit_FaceSet_icon'
 
+    # 2.92-3
+    DISPLACEMENT_SMEAR = 'Displacement_Smear_icon'
+    TOPOLOGY = 'Slide_Relax_icon'
+
     def __call__(self):
         return load_image(self.value, '.png', 'tools')
+
 
 def get_tool_icon(tool, is_brush=True):
     if is_brush:
         attr = getattr(DefToolImage, tool.sculpt_tool, None)
     else:
         name = 'T_' + tool.split('.')[1].upper()
-        #print(name)
+        # print(name)
         attr = getattr(DefToolImage, name, None)
     #print("ATTR:", attr)
     if not attr:

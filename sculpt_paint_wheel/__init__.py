@@ -12,19 +12,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+from . import auto_load
 bl_info = {
-    "name" : "Sculpt+Paint Wheel",
-    "author" : "J. Fran Matheu (@jfranmatheu)",
-    "description" : "Enhance your workflow with this awesome sculpt+paint wheel!",
-    "blender" : (2, 93, 0),
-    "version" : (2, 3, 0),
-    "location" : "Hold 'Space' inside 3D Viewport in Sculpt/Texture/Vertex/Weight modes. // 3D Viewport > Sidebar ('N') > 'Sculpt'/'Paint' tab > 'Sculpt Wheel'/'Paint Wheel'",
-    "warning" : "Versions are X.Y.Z, where X is for main version, Y for subversion (bugfixes) and Z for alpha/beta development (0 on release versions).",
-    "category" : "Interface"
+    "name": "Sculpt+Paint Wheel",
+    "author": "J. Fran Matheu (@jfranmatheu)",
+    "description": "Enhance your workflow with this awesome sculpt+paint wheel!",
+    "blender": (3, 0, 0),
+    "version": (2, 3, 1),
+    "location": "Hold 'Space' inside 3D Viewport in Sculpt/Texture/Vertex/Weight modes. // 3D Viewport > Sidebar ('N') > 'Sculpt'/'Paint' tab > 'Sculpt Wheel'/'Paint Wheel'",
+    "warning": "Versions are X.Y.Z, where X is for main version, Y for subversion (bugfixes) and Z for alpha/beta development (0 on release versions).",
+    "category": "Interface"
 }
 
-from . import auto_load
 auto_load.init()
+
 
 def gen_config():
     from . file_manager import get_addondatadir
@@ -39,16 +40,17 @@ def gen_config():
     makedirs(UserData.EXPORT_SCULPT_TOOLSETS_DIR())
     makedirs(UserData.EXPORT_SCULPT_BUTTONS_DIR())
 
+
 def register():
     gen_config()
 
     #from .icons import load_icons
-    #load_icons()
+    # load_icons()
 
     from bpy.utils import register_class
-    
-    auto_load.register() # REGISTER OPERATORS...
-    
+
+    auto_load.register()  # REGISTER OPERATORS...
+
     '''
 
     from .addon import register as register_prefs
@@ -59,25 +61,24 @@ def register():
 
     from .ui.ui import register as register_ui
     register_ui(register_class)
-    
 
     #from .op import register as register_ops
-    #register_ops(register_class)
-    
+    # register_ops(register_class)
+
     #from . gizmo_test import TEST_GG_gizmo_group, MyCustomShapeWidget
-    #register_class(MyCustomShapeWidget)
-    #register_class(TEST_GG_gizmo_group)
-    
+    # register_class(MyCustomShapeWidget)
+    # register_class(TEST_GG_gizmo_group)
+
     from . handlers import register_handlers
     register_handlers()
+
 
 def unregister():
     from bpy.utils import unregister_class
 
     from . handlers import unregister_handlers
     unregister_handlers()
-    
-    
+
     from .ui.ui import unregister as unregister_ui
     unregister_ui(unregister_class)
 
@@ -89,13 +90,13 @@ def unregister():
     '''
 
     #from .op import register as unregister_ops
-    #unregister_ops(unregister_class)
-    
+    # unregister_ops(unregister_class)
+
     #from .icons import remove_icons
-    #remove_icons()
-    
+    # remove_icons()
+
     auto_load.unregister()  # UNREGISTER OPERATORS...
-    
+
     #from . gizmo_test import TEST_GG_gizmo_group, MyCustomShapeWidget
-    #unregister_class(TEST_GG_gizmo_group)
-    #unregister_class(MyCustomShapeWidget)
+    # unregister_class(TEST_GG_gizmo_group)
+    # unregister_class(MyCustomShapeWidget)

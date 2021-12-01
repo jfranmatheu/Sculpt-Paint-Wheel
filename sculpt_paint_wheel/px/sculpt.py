@@ -4,7 +4,7 @@ import colorsys
 from .. utils.fun import get_point_in_circle_from_angle, smoothstep, Vector, direction_from_to, distance_between
 from math import pi
 from .. gpu.text import (
-    Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim
+    Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim, SetFontWW, RstFontWW
 )
 from .. gpu.image import Draw_Image
 from .. gpu.gl_fun import SetLineSBlend, RstLineSBlend
@@ -20,7 +20,8 @@ HORIZONTAL = 0
 VERTICAL = 1
 NONE = -1
 
-ACTIVE_LINE_COLOR = (pow(.337*1.5, .454545), pow(.5*1.5, .454545), pow(.76*1.5, .454545), 1.)
+ACTIVE_LINE_COLOR = (pow(.337*1.5, .454545),
+                     pow(.5*1.5, .454545), pow(.76*1.5, .454545), 1.)
 
 
 def draw_callback_px(op, ctx, o):
@@ -35,6 +36,9 @@ def draw_callback_px(op, ctx, o):
     EDIT_MODE = op.mode == 'EDIT'
     num_icons = len(op.icons)
     custom_co = op.prefs.use_custom_tool_colors
+    tlco = op.theme.tool_color
+    tlco_hov = op.theme.tool_color_hovered
+    tloutco = op.theme.tool_outline_color
 
     # Relleno del circulo grande.
     DiCFS(o, op.rad, op.theme.base_color)
@@ -42,18 +46,18 @@ def draw_callback_px(op, ctx, o):
     #DiIMGAMMA_OP((0,0), (1,1), 0.0, 0)
     #DiIMGAMMA((0,0), (1,1), 0)
     #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    #SetDepth()
-    #SetMultisample()
+    # SetDepth()
+    # SetMultisample()
     #glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex)
     #glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex)
-    RstColorSpace()
+    # RstColorSpace()
     SetBlend()
 
     Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
-    
-    #glBindTexture(GL_TEXTURE_2D,0)
+
+    # glBindTexture(GL_TEXTURE_2D,0)
     #glBindFramebuffer(GL_FRAMEBUFFER, 0)
-    #glActiveTexture(GL_TEXTURE0)
+    # glActiveTexture(GL_TEXTURE0)
     #glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST)
     if EDIT_MODE:
         # Linea del circulo grande. (Modo Edición)
@@ -61,28 +65,35 @@ def draw_callback_px(op, ctx, o):
         #DiCLS(o, op.rad-8, 64, 1.5, (.95, .5, .15, .95))
         DiRNGBLR(o, op.rad-4, .02, .01, (.95, .5, .15, .95))
         DiRNGBLR(o, op.rad-6, .02, .01, (.95, .6, .25, .95))
-        
+
         # Herramientas.
         Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
-        
+
         n = num_icons
         for i, p in enumerate(op.tool_pos):
             if n != 0:
-                DiCFCL(p, tool_rad-4, (.12, .12, .12, .9), (.44, .44, .44, .9))
+                # (.12, .12, .12, .9), (.44, .44, .44, .9))
+                DiCFCL(p, tool_rad-4, tlco, tloutco)
                 if op.moving and i == op.moving_tool_index:
                     pass
                 else:
-                    DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i][1]) # take gpu texture index.
+                    # take gpu texture index.
+                    DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad),
+                              x2_dec_tool_rad, op.icons[i][1])
                 n -= 1
 
         # Modal: estás moviendo una tool de sitio.
         if op.moving and op.moving_tool_index != -1 and op.moving_tool_index < num_icons:
-            DiCFCL(op.mouse_pos, dec_tool_rad, (.24, .24, .24, .65), (.8, .8, .8, .2))
-            p = (op.mouse_pos[0] - dec_tool_rad, op.mouse_pos[1] - dec_tool_rad)
-            
-            DiIMGAMMA_OP(p, x2_dec_tool_rad, .8, op.icons[op.moving_tool_index][1])
+            DiCFCL(op.mouse_pos, dec_tool_rad,
+                   (.24, .24, .24, .65), (.8, .8, .8, .2))
+            p = (op.mouse_pos[0] - dec_tool_rad,
+                 op.mouse_pos[1] - dec_tool_rad)
+
+            DiIMGAMMA_OP(p, x2_dec_tool_rad, .8,
+                         op.icons[op.moving_tool_index][1])
             if op.moving_remove:
-                DiCFCL(op.mouse_pos, dec_tool_rad, (1, 0, 0, .5), (1, .2, .2, .8))
+                DiCFCL(op.mouse_pos, dec_tool_rad,
+                       (1, 0, 0, .5), (1, .2, .2, .8))
 
     else:
         tools = op.active_toolset.tools
@@ -129,7 +140,7 @@ def draw_callback_px(op, ctx, o):
             DiCLS(op.handle_sv, 3, 12, 1.3, (1, 1, 1, 1))
             DiCLS(op.handle_sv, 4, 12, 1.3, (0, 0, 0, 1))
             if op.coloring:
-                v = smoothstep(0, 1, 1 - c[2]) # 0 if hsv[2] > .5 else 1
+                v = smoothstep(0, 1, 1 - c[2])  # 0 if hsv[2] > .5 else 1
                 if op.coloring_type == RING:
                     DiCFCL(op.handle_h, 9, [*op.color, 1], (v, v, v, 1))
                 elif op.coloring_type == RECT:
@@ -145,37 +156,47 @@ def draw_callback_px(op, ctx, o):
                 #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
                 if not op.gestual_sabe_dir:
                     ts = int(op.text_size * 11/12)
-                    Draw_Text_AlignCenter(o[0], o[1]+10, "↕ Size ↕", ts) # ⭥ ⇕ ⇳ ᛨ ⭥ 🡙 ↨ ⮃ ⮁ ⇵ ⇅
-                    Draw_Text_AlignCenter(o[0], o[1]-10, "↔ Strength ↔", ts) # ⬌ ↔ ⇿ ⭤ ⟷ ⟺ ⬄ 🡘 ⮀ ⇆ ⮂ ⇄
+                    # ⭥ ⇕ ⇳ ᛨ ⭥ 🡙 ↨ ⮃ ⮁ ⇵ ⇅
+                    Draw_Text_AlignCenter(o[0], o[1]+10, "↕ Size ↕", ts)
+                    # ⬌ ↔ ⇿ ⭤ ⟷ ⟺ ⬄ � ⮀ ⇆ ⮂ ⇄
+                    Draw_Text_AlignCenter(o[0], o[1]-10, "↔ Strength ↔", ts)
                 elif op.prefs.gesturepad_mode == 'SIMPLE':
                     ts_16 = int(op.text_size * 16/12)
                     ts_13 = int(op.text_size * 13/12)
                     if (op.gesto_dir == HORIZONTAL and not op.invert_gestodir) or (op.gesto_dir == VERTICAL and op.invert_gestodir):
-                        Draw_Text_AlignCenter(o[0], o[1]+op.gestual_pad_rad*.5, "Strength", ts_13)
-                        DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15), (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
-                        Draw_Text_AlignCenter(o[0], o[1]-op.gestual_pad_rad*.3, "%.2f" % round(op.get_brush_strength(), 2), ts_16)
+                        Draw_Text_AlignCenter(
+                            o[0], o[1]+op.gestual_pad_rad*.5, "Strength", ts_13)
+                        DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15),
+                            (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
+                        Draw_Text_AlignCenter(
+                            o[0], o[1]-op.gestual_pad_rad*.3, "%.2f" % round(op.get_brush_strength(), 2), ts_16)
                     else:
-                        Draw_Text_AlignCenter(o[0], o[1]+op.gestual_pad_rad*.5, "Size", ts_13)
-                        DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15), (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
-                        Draw_Text_AlignCenter(o[0], o[1]-op.gestual_pad_rad*.3, str(op.get_brush_size()), ts_16)
+                        Draw_Text_AlignCenter(
+                            o[0], o[1]+op.gestual_pad_rad*.5, "Size", ts_13)
+                        DiL((o[0]-op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15),
+                            (o[0]+op.gestual_pad_rad*.75, o[1]+op.gestual_pad_rad*.15))
+                        Draw_Text_AlignCenter(
+                            o[0], o[1]-op.gestual_pad_rad*.3, str(op.get_brush_size()), ts_16)
             elif op.active_tool_is_brush and (op.gestual_on_hover or ((op.ctrealidx >= num_buttons or op.ctrealidx < 0) and op.on_hover_tool_index == -1)):
-                Draw_Text_AlignCenter(o[0], o[1], "P A D", int(op.text_size * 16/12), (.8, .8, .8, .9), False)
+                Draw_Text_AlignCenter(o[0], o[1], "P A D", int(
+                    op.text_size * 16/12), (.8, .8, .8, .9), False)
                 if op.gestual_on_hover:
                     DiRNGBLR(o, op.gestual_pad_rad, .075, .01, (1, 0, 1, .95))
                     #DiCLS(o, op.gestual_pad_rad, 36, 1.5, (1, 0, 1, .95))
 
             # Ranuras personalizadas.
             factor = op.gestual_pad_rad / op.color_ring_rad
-            #print(factor)
+            # print(factor)
             # DiRNGS(o, op.color_ring_rad, factor, 1., .5, (.05, .05, .05, .9))
-            DiRNGS_SPLITANG(o, op.color_ring_rad, factor, 1., .6, op.ctnum, op.ctidx, op.theme.pie_color)
+            DiRNGS_SPLITANG(o, op.color_ring_rad, factor, 1., .4,
+                            op.ctnum, op.ctidx, op.theme.pie_color)
 
             # Botoncitos de la tarta personalizados.
             num_tarta_icons = len(op.tarta_icons)
             Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
             size = Vector((op.tarta_item_rad, op.tarta_item_rad))
             half_size = size / 2.0
-            #for i, b in enumerate(op.wheel.custom_buttons):
+            # for i, b in enumerate(op.wheel.custom_buttons):
             def_bcode = op.none_icon[1]
             for i in range(0, num_tarta_icons):
                 if op.tarta_icons[i]:
@@ -184,7 +205,7 @@ def draw_callback_px(op, ctx, o):
                     bcode = def_bcode
                 DiIMGA(op.tarta_pos[i] - half_size, size, bcode)
 
-            DiRNGBLR(o, op.color_ring_rad, .025, .01, (.75, .75, .75, .9))
+            DiRNGBLR(o, op.color_ring_rad, .025, .01, (.64, .64, .64, .9))
             #DiCLS(o, op.color_ring_rad, 50, 2, (.75, .75, .75, .9))
 
             text = None
@@ -201,9 +222,11 @@ def draw_callback_px(op, ctx, o):
                 else:
                     space = ' ' in text
 
-            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx]: #num_buttons:
+            # num_buttons:
+            elif op.ctidx != -100 and op.ctrealidx > -1 and op.ctrealidx < num_tarta_icons and op.tarta_icons[op.ctrealidx]:
                 text = op.wheel.custom_buttons[op.ctrealidx].name
-                DiIMGA_Intensify(op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
+                DiIMGA_Intensify(
+                    op.tarta_pos[op.ctrealidx] - half_size, size, op.tarta_icons[op.ctrealidx][1], 1.25)
                 # y += op.gestual_pad_rad / 2
                 space = ' ' in text
 
@@ -218,33 +241,37 @@ def draw_callback_px(op, ctx, o):
                         y += h
                     h *= 1.75
                     for txt in split:
-                        Draw_Text_AlignCenter(o[0], y, txt, text_size, (.9, .9, .9, .9), False)
+                        Draw_Text_AlignCenter(
+                            o[0], y, txt, text_size, (.9, .9, .9, .9), False)
                         y -= h
                 else:
-                    Draw_Text_AlignCenter(o[0], o[1], text, text_size, (.9, .9, .9, .9), False)
-            
+                    Draw_Text_AlignCenter(
+                        o[0], o[1], text, text_size, (.9, .9, .9, .9), False)
 
         # Herramientas.
-        if not custom_co:
-            DiCFCLs(tool_rad-4, (.12, .12, .12, .9), (.44, .44, .44, .9), op.tool_pos)
+        # if not custom_co:
+        #    DiCFCLs(tool_rad-4, (.12, .12, .12, .9),
+        #            (.44, .44, .44, .9), op.tool_pos)
+        # else:
+        rad = tool_rad-4
+        pos = op.tool_pos
+        if op.prefs.custom_tool_color_mode == 'FILL':
+            for i, tool in enumerate(tools):
+                if tool.color[-1] == 0:
+                    DiCFS(pos[i], rad, tlco)  # (.12, .12, .12, .9)
+                else:
+                    DiCFS(pos[i], rad, tool.color)
+                DiRNGBLR(pos[i], rad, .075, .02, tloutco)  # 44, .44, .44, .9)
+            #DiCLSs(rad, 32, 2, (.44, .44, .44, .9), pos)
         else:
-            rad = tool_rad-4
-            pos = op.tool_pos
-            if op.prefs.custom_tool_color_mode == 'FILL':
-                for i, tool in enumerate(tools):
-                    if tool.color[-1] == 0:
-                        DiCFS(pos[i], rad, (.12, .12, .12, .9))
-                    else:
-                        DiCFS(pos[i], rad, tool.color)
-                DiCLSs(rad, 32, 2, (.44, .44, .44, .9), pos)
-            else:
-                DiCFSs(rad, (.12, .12, .12, .9), pos)
-                rad +=2
-                for i, tool in enumerate(tools):
-                    if tool.color[-1] == 0:
-                        DiRNGBLR(pos[i], rad, .08, .02, (.44, .44, .44, .9))
-                    else:
-                        DiRNGBLR(pos[i], rad, .08, .02, tool.color)
+            DiCFSs(rad, tlco, pos)  # (.12, .12, .12, .9)
+            rad += 2
+            for i, tool in enumerate(tools):
+                if tool.color[-1] == 0:
+                    # (.44, .44, .44, .9))
+                    DiRNGBLR(pos[i], rad, .08, .02, tloutco)
+                else:
+                    DiRNGBLR(pos[i], rad, .08, .02, tool.color)
 
         # Iconos de Herramientas.
         a_idx = op.active_tool_index
@@ -253,32 +280,33 @@ def draw_callback_px(op, ctx, o):
             if n == 0:
                 break
             if i == a_idx:
-                DiIMGA_Intensify (
+                DiIMGA_Intensify(
                     (p[0] - dec_tool_rad, p[1] - dec_tool_rad),
                     x2_dec_tool_rad,
                     op.icons[a_idx][1], 1.25
                 )
             else:
-                DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad), x2_dec_tool_rad, op.icons[i][1])
+                DiIMGAMMA((p[0] - dec_tool_rad, p[1] - dec_tool_rad),
+                          x2_dec_tool_rad, op.icons[i][1])
             n -= 1
 
         if op.on_hover_tool_index != -1:
             if not op.active_tool_pos or op.on_hover_tool_pos != op.active_tool_pos:
                 p = op.on_hover_tool_pos
                 if not custom_co:
-                    DiCFS(p, tool_rad-4, (.16, .16, .16, .9))
+                    DiCFS(p, tool_rad-4, tlco_hov)  # (.16, .16, .16, .9)
                 else:
                     c = tools[op.on_hover_tool_index].color
                     if c[-1] == 0:
-                        DiCFS(p, tool_rad-4, (.16, .16, .16, .9))
+                        DiCFS(p, tool_rad-4, tlco_hov)  # (.16, .16, .16, .9))
                     else:
                         color = Vector((c[0], c[1], c[2], c[3])) * 1.25
                         DiCFS(p, tool_rad-4, color)
                 if op.on_hover_tool_index != -1 and op.on_hover_tool_index < num_icons:
-                    DiIMGA_Intensify (
+                    DiIMGA_Intensify(
                         (p[0] - dec_tool_rad, p[1] - dec_tool_rad),
                         x2_dec_tool_rad,
-                        op.icons[op.on_hover_tool_index][1], 1.25
+                        op.icons[op.on_hover_tool_index][1], 1.1
                     )
 
         # Nombres de Herramientas.
@@ -288,25 +316,24 @@ def draw_callback_px(op, ctx, o):
             for i, p in enumerate(op.tool_pos):
                 if i >= num_tools:
                     break
-                Draw_Text_AlignCenter(p[0], p[1]-half_tool_rad, tools[i].name, int(op.text_size * 10/12))
+                Draw_Text_AlignCenter(
+                    p[0], p[1]-half_tool_rad, tools[i].name, int(op.text_size * 10/12))
             RstFontWW(0)
 
     # Herramienta sobre el puntero.
-    if EDIT_MODE and op.on_hover_tool_pos :
+    if EDIT_MODE and op.on_hover_tool_pos:
         if not op.active_tool_pos or op.on_hover_tool_pos != op.active_tool_pos:
-            DiRNGBLR(op.on_hover_tool_pos, tool_rad-2, .075, .02, (.0, 1., 1., 1.))
+            DiRNGBLR(op.on_hover_tool_pos, tool_rad -
+                     2, .075, .02, (.0, 1., 1., 1.))
 
     # Herramienta activa.
     if op.active_tool_pos:
-        if not custom_co:
-            DiRNGBLR(op.active_tool_pos, tool_rad-2, .075, .02, (1, .85, .05, .9))
-        else:
-            if op.prefs.custom_tool_color_mode == 'FILL':
-                DiCLS(op.active_tool_pos, tool_rad, 32, 2, (1, 1, 1, 1))
-            else:
-                DiRNGBLR(op.active_tool_pos, tool_rad-2, .1, .025, (1, 1, 1, 1))
-                DiRNGBLR(op.active_tool_pos, tool_rad, .11, .025, (1, 1, 0, 1))
-    
+        DiRNGBLR(op.active_tool_pos, tool_rad -
+                 2, .075, .02, (1, .85, .05, .9))
+        if custom_co and op.prefs.custom_tool_color_mode != 'FILL':
+            DiRNGBLR(op.active_tool_pos, tool_rad -
+                     2, .1, .025, (1, .85, .05, .9))
+
     for b in op.outsider_buttons:
         b.draw()
 
@@ -320,4 +347,4 @@ def draw_callback_px(op, ctx, o):
             DiPLight(op.on_hover_toolset_pos, op.toolset_rad+2, (0, 1, 1))
 
     RstBlend()
-    SetSRGB()
+    # SetSRGB()

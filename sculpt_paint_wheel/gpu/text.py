@@ -16,8 +16,7 @@ from blf import (
     enable as text_enable, disable as text_disable,
     SHADOW, shadow as text_shadow, shadow_offset as text_shadow_offset,
     color as text_color, position as text_position, size as text_size,
-    dimensions as text_dim, draw as text_draw, ROTATION, rotation as text_rotation,
-    clipping as text_clipping, CLIPPING, KERNING_DEFAULT, WORD_WRAP, MONOCHROME
+    dimensions as text_dim, draw as text_draw, ROTATION, CLIPPING, WORD_WRAP
 )
 
 def Draw_Text(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, _a = 1, _use_shadow = False):

@@ -1,5 +1,5 @@
 from .. utils import point_inside_circle
-from .. gpu.dibuix import DiCFCL, DiIMGA
+from .. gpu.dibuix import DiCFS, DiRNGBLR, DiIMGA
 
 
 class ButtonCircle:
@@ -27,9 +27,11 @@ class ButtonCircle:
 
     def draw(self):
         if self.on_hover:
-            DiCFCL(self.pos, self.rad, self.act_co if self.toggle else self.co, (0, 1, 1, .9))
+            DiCFS(self.pos, self.rad, self.act_co if self.toggle else self.co)
+            DiRNGBLR(self.pos, self.rad, .1, .025, (0, 1, 1, .9))
         else:
-            DiCFCL(self.pos, self.rad, self.act_co if self.toggle else self.co, (.4, .4, .4, .9))
+            DiCFS(self.pos, self.rad, self.act_co if self.toggle else self.co)
+            DiRNGBLR(self.pos, self.rad, .1, .025, (.4, .4, .4, .9))
         if self.id:
             rad = self.rad*.7
             DiIMGA((self.pos[0]-rad, self.pos[1]-rad), [rad*2]*2, self.id)

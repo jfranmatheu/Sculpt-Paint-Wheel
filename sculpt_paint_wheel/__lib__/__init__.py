@@ -1,9 +1,9 @@
 
 from ..import __package__ as __main__
 if __main__ == 'sculpt_paint_wheel':
-  from enum import Enum
+    from enum import Enum
 
-  CF_VS = """
+    CF_VS = """
   uniform mat4 ModelViewProjectionMatrix;
   uniform float size;
 
@@ -16,7 +16,7 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
 
-  CF_FS = """
+    CF_FS = """
   uniform vec4 co;
   out vec4 fragColor;
 
@@ -33,11 +33,12 @@ if __main__ == 'sculpt_paint_wheel':
     }
 
     fragColor = vec4(co, a);
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   """
 
-  # 2nd method.
-  CFS2_FS = """
+    # 2nd method.
+    CFS2_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -61,10 +62,40 @@ if __main__ == 'sculpt_paint_wheel':
       discard;
     fragColor = co;
     fragColor.a *= s;
+    //fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   """
-  
-  CFS_CROPTOP_FS = """
+
+  # 2nd method.
+    CFS2_GAMMA_FS = """
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+
+  uniform vec4 co;
+  out vec4 fragColor;
+
+  float roundedFrame (float d, float thickness)
+  {
+    return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
+  }
+
+  void main()
+  {
+    float r = 0.0;
+    vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+    r = dot(cxy, cxy);
+
+    float s = roundedFrame(r, 9.5);
+    if (s < 0.05)
+      discard;
+    fragColor = co;
+    fragColor.a *= s;
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
+  }
+  """
+
+    CFS_CROPTOP_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -94,8 +125,8 @@ if __main__ == 'sculpt_paint_wheel':
     fragColor.a *= s;
   }
   """
-  
-  CFS_CROPBOT_FS = """
+
+    CFS_CROPBOT_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -126,10 +157,10 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
 
-  ###################
-  ###################
-  # IMG
-  IMG_VS = '''
+    ###################
+    ###################
+    # IMG
+    IMG_VS = '''
       uniform mat4 ModelViewProjectionMatrix;
 
       in vec2 texco;
@@ -142,7 +173,7 @@ if __main__ == 'sculpt_paint_wheel':
           texco_interp = texco;
       }
   '''
-  IMGA_FS = '''
+    IMGA_FS = '''
       in vec2 texco_interp;
       out vec4 fragColor;
 
@@ -157,7 +188,7 @@ if __main__ == 'sculpt_paint_wheel':
           fragColor = texColor;
       }
   '''
-  IMGA_GAMMCORR_FS = '''
+    IMGA_GAMMCORR_FS = '''
   uniform sampler2D image;
   in vec2 texco_interp;
   out vec4 fragColor;
@@ -187,13 +218,14 @@ if __main__ == 'sculpt_paint_wheel':
     if (dist > .5f)
       discard;
     fragColor = texture(image, texco_interp);
-    linearrgb_to_srgb(fragColor, fragColor);
+    //linearrgb_to_srgb(fragColor, fragColor);
     if (dist > .4f)
       fragColor.a *= smoothstep(.5f, .4f, dist);
     //fragColor = blender_srgb_to_framebuffer_space(fragColor);
+    //fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   '''
-  '''
+    '''
     in vec2 texco_interp;
     out vec4 fragColor;
 
@@ -210,7 +242,7 @@ if __main__ == 'sculpt_paint_wheel':
     }
   '''
 
-  IMGA_GAMMA_OP = '''
+    IMGA_GAMMA_OP = '''
     in vec2 texco_interp;
     out vec4 fragColor;
 
@@ -228,7 +260,7 @@ if __main__ == 'sculpt_paint_wheel':
     }
   '''
 
-  IMGA_GAMMCORR_BOOST_FS = """
+    IMGA_GAMMCORR_BOOST_FS = """
     in vec2 texco_interp;
     out vec4 fragColor;
 
@@ -273,7 +305,7 @@ if __main__ == 'sculpt_paint_wheel':
     }
   """
 
-  PLIGHT_FS = """
+    PLIGHT_FS = """
   precision mediump float;
   uniform vec3 co;
   out vec4 fragColor;
@@ -291,7 +323,7 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
 
-  RNGBLR_FS = """
+    RNGBLR_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -338,9 +370,10 @@ if __main__ == 'sculpt_paint_wheel':
 
     fragColor = co;
     fragColor.a = alpha;
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   """
-  RNGBLRSLC_FS = """
+    RNGBLRSLC_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -375,9 +408,10 @@ if __main__ == 'sculpt_paint_wheel':
 
     fragColor = co;
     fragColor.a *= alpha;
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   """
-  RTCROMASLLIN_FS = """
+    RTCROMASLLIN_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -398,7 +432,7 @@ if __main__ == 'sculpt_paint_wheel':
     fragColor.a = 1.0;
   }
   """
-  CRNGCROMLINH_FS = """
+    CRNGCROMLINH_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -449,9 +483,9 @@ if __main__ == 'sculpt_paint_wheel':
     fragColor.a = alpha;
   }
   """
-  SHCx4343524F4D415F48=(CF_VS,CRNGCROMLINH_FS)
-  SHCx5243524f4d415f534c5f4c494e=(CF_VS,RTCROMASLLIN_FS)
-  RNGS_SPLITANG_FS = """
+    SHCx4343524F4D415F48 = (CF_VS, CRNGCROMLINH_FS)
+    SHCx5243524f4d415f534c5f4c494e = (CF_VS, RTCROMASLLIN_FS)
+    RNGS_SPLITANG_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -524,9 +558,10 @@ if __main__ == 'sculpt_paint_wheel':
 
     fragColor = color;
     fragColor.a *= alpha*s;
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
   }
   """
-  CRNGCROMLINW_FS = """
+    CRNGCROMLINW_FS = """
   #ifdef GL_ES
   precision mediump float;
   #endif
@@ -583,65 +618,65 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
 
-  ''' SHADER CODES ''' # TODO: Make it beautiful, PLEASE...
-  # RINGS
-  # SHCx524E4753 = (CF_VS, RNGS_FS)
-  
-  SHCx524E47424C52 = (CF_VS, RNGBLR_FS)
-  SHCx524E47535F53504C4954414E47 = (CF_VS, RNGS_SPLITANG_FS)
-  SHCx524E47424C5218103 = (CF_VS, RNGBLRSLC_FS)
-  SHCx43524e4743524f4d4c494e57 = (CF_VS, CRNGCROMLINW_FS)
+    ''' SHADER CODES '''  # TODO: Make it beautiful, PLEASE...
+    # RINGS
+    # SHCx524E4753 = (CF_VS, RNGS_FS)
 
-  # CIRCLES
-  SHCx434653 = (CF_VS, CFS2_FS)
-  SHCx4346535F43524F50544F50 = (CF_VS, CFS_CROPTOP_FS)
-  SHCx4346535F43524F50424F54 = (CF_VS, CFS_CROPBOT_FS)
+    SHCx524E47424C52 = (CF_VS, RNGBLR_FS)
+    SHCx524E47535F53504C4954414E47 = (CF_VS, RNGS_SPLITANG_FS)
+    SHCx524E47424C5218103 = (CF_VS, RNGBLRSLC_FS)
+    SHCx43524e4743524f4d4c494e57 = (CF_VS, CRNGCROMLINW_FS)
 
-  # SHCx4346535F41415F424C52 = (CF_VS, CFS_AA_BLR_FS)
+    # CIRCLES
+    SHCx434653 = (CF_VS, CFS2_FS)
+    SHCx434653_2 = (CF_VS, CFS2_GAMMA_FS)
+    SHCx4346535F43524F50544F50 = (CF_VS, CFS_CROPTOP_FS)
+    SHCx4346535F43524F50424F54 = (CF_VS, CFS_CROPBOT_FS)
 
-  # CROMA
-  # SHCx4343524F4D415F48 = (CF_VS, CRCROMA_H_FS)
-  # SHCx4343524F4D415F4853 = (CF_VS, CCROMA_HS_FS)
-  # SHCx4343524F4D415F534C = (CF_VS, RCROMA_SL_FS)
+    # SHCx4346535F41415F424C52 = (CF_VS, CFS_AA_BLR_FS)
 
-  # IMAGES
-  SHCx494D4741 = (IMG_VS, IMGA_FS)
-  SHCx494D47415F47414D434F = (IMG_VS, IMGA_GAMMCORR_FS)
-  SHCx494D47415F47414D434F5F424F4F5354 = (IMG_VS, IMGA_GAMMCORR_BOOST_FS)
-  SHCx494D47415F47414D4D415F4F50 = (IMG_VS, IMGA_GAMMA_OP)
+    # CROMA
+    # SHCx4343524F4D415F48 = (CF_VS, CRCROMA_H_FS)
+    # SHCx4343524F4D415F4853 = (CF_VS, CCROMA_HS_FS)
+    # SHCx4343524F4D415F534C = (CF_VS, RCROMA_SL_FS)
 
-  # OTHERS
-  SHCx504C49474854 = (CF_VS, PLIGHT_FS)
+    # IMAGES
+    SHCx494D4741 = (IMG_VS, IMGA_FS)
+    SHCx494D47415F47414D434F = (IMG_VS, IMGA_GAMMCORR_FS)
+    SHCx494D47415F47414D434F5F424F4F5354 = (IMG_VS, IMGA_GAMMCORR_BOOST_FS)
+    SHCx494D47415F47414D4D415F4F50 = (IMG_VS, IMGA_GAMMA_OP)
 
-  # RECT
-  # SHCx525F4141 = (CF_VS, R_AA_FS)
+    # OTHERS
+    SHCx504C49474854 = (CF_VS, PLIGHT_FS)
 
+    # RECT
+    # SHCx525F4141 = (CF_VS, R_AA_FS)
 
-  ''' SHADER GEOMETRY '''
-  def get_img_geom(*args):
-    return {"p" : get_img_verts(*args), "texco" : get_tex_coord()}
+    ''' SHADER GEOMETRY '''
+    def get_img_geom(*args):
+        return {"p": get_img_verts(*args), "texco": get_tex_coord()}
 
-  def get_tex_coord():
-    return ((0, 1), (0, 0), (1, 0), (1, 1))
+    def get_tex_coord():
+        return ((0, 1), (0, 0), (1, 0), (1, 1))
 
-  def get_img_verts(*args):
-    x, y = args[0]
-    w, h = args[1]
-    return [
-        [x,     y + h],
-        [x,     y],
-        [x + w, y],
-        [x + w, y + h]
-    ]
+    def get_img_verts(*args):
+        x, y = args[0]
+        w, h = args[1]
+        return [
+            [x,     y + h],
+            [x,     y],
+            [x + w, y],
+            [x + w, y + h]
+        ]
 
-  def get_cir_geom(*args):
-    return {"p": [args[0]]}
+    def get_cir_geom(*args):
+        return {"p": [args[0]]}
 
-  class ShaderGeom(Enum):
-      IMG = get_img_geom
-      IMG_V = get_img_verts
-      IMG_TC = get_tex_coord # Ref: https://docs.blender.org/api/blender2.8/gpu.html#d-image
-      CIR = get_cir_geom     # https://docs.blender.org/api/blender2.8/gpu.html#d-rectangle
+    class ShaderGeom(Enum):
+        IMG = get_img_geom
+        IMG_V = get_img_verts
+        IMG_TC = get_tex_coord  # Ref: https://docs.blender.org/api/blender2.8/gpu.html#d-image
+        CIR = get_cir_geom     # https://docs.blender.org/api/blender2.8/gpu.html#d-rectangle
 
-      def __call__(self, *args):
-          return self.value(*args[0])
+        def __call__(self, *args):
+            return self.value(*args[0])

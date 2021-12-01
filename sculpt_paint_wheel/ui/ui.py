@@ -174,7 +174,7 @@ class SculptWheelToolsets(Panel):
         
         toolset_row.popover('SCULPTWHEEL_PT_show_toolset_options', text="", icon='PROPERTIES')
         
-        toolset_row.label(text="", icon='SMALL_TRI_RIGHT_VEC')
+        toolset_row.label(text="", icon='DISCLOSURE_TRI_RIGHT')
         
         toolset_row.popover('SCULPTWHEEL_PT_show_general_toolset_options', text="", icon='COLLAPSEMENU')
         

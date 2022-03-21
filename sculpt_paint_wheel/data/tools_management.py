@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 
 class ToolsManagement():
@@ -9,9 +10,11 @@ class ToolsManagement():
         n = len(self.toolsets)
         if n >= 12:
             return
-        new_toolset = self.toolsets.add()
+        from data.common import WheelToolset
+        new_toolset: WheelToolset = self.toolsets.add()
         new_toolset.name = name if name != '' else 'Toolset_' + str(n)
-        new_toolset.uuid = datetime.today().strftime('%Y%m%d%H%M%S') # Inverted date and time.
+        new_toolset.uuid = uuid4() # datetime.today().strftime('%Y%m%d%H%M%S') # Inverted date and time.
+        new_toolset.version = 0
         self.active_toolset = n
         self.toolset_list = str(n)
         #OP.ed.undo_push(message='Added new toolset')
@@ -35,7 +38,7 @@ class ToolsManagement():
 
             ts = self.toolsets[toolset]
             if ts.use_global and remove_global:
-                from .. io.io import remove_sculpt_toolset_from_globals
+                from ..io import remove_sculpt_toolset_from_globals
                 remove_sculpt_toolset_from_globals(None, ts)
 
             self.toolsets.remove(toolset)

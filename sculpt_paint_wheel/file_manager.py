@@ -3,17 +3,39 @@ import pathlib
 from enum import Enum
 from os.path import join
 
+import bpy
+
+b3d_user_path = bpy.utils.resource_path('USER')
+b3d_config_path = join(b3d_user_path, "config")
+
+"""
+* Linux *
+LOCAL: ./3.1/
+USER: $HOME/.config/blender/3.1/
+SYSTEM: /usr/share/blender/3.1/
+-----
+* Mac OS *
+LOCAL: ./3.1/
+USER: /Users/$USER/Library/Application Support/Blender/3.1/
+SYSTEM: /Library/Application Support/Blender/3.1/
+-----
+* Windows *
+LOCAL: .\3.1\
+USER: %USERPROFILE%\AppData\Roaming\Blender Foundation\Blender\3.1\
+SYSTEM: %USERPROFILE%\AppData\Roaming\Blender Foundation\Blender\3.1\
+"""
+
 
 def get_addondatadir() -> pathlib.Path:
 
-    """
+    '''
     Returns a parent directory path
     where persistent application data can be stored.
 
     # linux: ~/.local/share
     # macOS: ~/Library/Application Support
     # windows: C:/Users/<USER>/AppData/Roaming
-    """
+    '''
 
     home = pathlib.Path.home()
 
@@ -24,8 +46,21 @@ def get_addondatadir() -> pathlib.Path:
     elif sys.platform == "darwin":
         return home / "Library/Application Support/Blender/addon_data"
 
+    '''
+    import os
+
+    configpath = os.path.join(
+        os.environ.get('APPDATA') or
+        os.environ.get('XDG_CONFIG_HOME') or
+        os.path.join(os.environ['HOME'], '.config'),
+        "Blender Foundation"
+    )
+    print(configpath)
+    '''
+
+
 # HARDCODED. Change this to change root of user data.
-user_data = str((get_addondatadir() / "wheel_user_data").absolute())
+user_data = join(b3d_config_path, 'spwheel') # str((get_addondatadir() / "wheel_user_data").absolute())
 
 class UserData(Enum):
     ROOT = user_data

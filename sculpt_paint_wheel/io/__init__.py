@@ -2,7 +2,7 @@ import bpy
 ''' IMPORTER/EXPORTER FOR WHEEL DATA. '''
 
 from os.path import dirname, abspath, join, exists, isfile, basename
-from .. file_manager import UserData
+from ..file_manager import UserData
 import json
 import re
 from .. import bl_info
@@ -146,14 +146,17 @@ def load_global_sculpt_toolsets(context, toolsets=None):
             if toolset_id not in data:
                 print("[SCULPTWHEEL] WARN: Toolset %s not in database!" % toolset_id)
                 continue
+            if sculpt_wheel.has_toolset(toolset_id):
+                print("[SCULPTWHEEL] INFO: Toolset %s already in project!" % toolset_id)
+                continue
 
             toolset = sculpt_wheel.add_toolset(data[toolset_id]['name'])
-            toolset.update_flag = False
+            toolset.prevent_update = True
             toolset.uuid = toolset_id
             toolset.use_global = True
             toolset.export_on_save = data[toolset_id]['export_on_save']
-            toolset.update_flag = True
-            
+            toolset.prevent_update = False
+
             ####################################################
             # TOOLSET GENERATION ###############################
             ####################################################
@@ -238,11 +241,11 @@ def reload_active_global_toolset(context):
             print("[SCULPTWHEEL] WARN: Toolset %s not in database!" % toolset_id)
             return False
         toolset = sculpt_wheel.add_toolset(data[toolset_id]['name'])
-        toolset.update_flag = False
+        toolset.prevent_update = True
         toolset.uuid = toolset_id
         toolset.use_global = True
         toolset.export_on_save = data[toolset_id]['export_on_save']
-        toolset.update_flag = True
+        toolset.prevent_update = False
 
         '''
         # FORCE OVERWRITE EVEN IF IT HAS NO toolset.globa_overwrite active CAUSE
@@ -549,7 +552,7 @@ def backup_all_addon_data(ctx):
     
     ''' 4. Export theme config to theme.json '''
     # Get theme ref. from preferences.
-    from .. addon import get_prefs
+    from ..addon import get_prefs
     prefs = get_prefs(ctx)
     theme = prefs.theme
     
@@ -566,7 +569,7 @@ def backup_all_addon_data(ctx):
     
     
     ''' 5. Export keymap config to keymap_config.json '''
-    from .. addon.km import get_keyitem_mode, modes
+    from ..addon.km import get_keyitem_mode, modes
     
     # Construct dictionary for theme data and fill it up.
     data_filepath = join(folder_path, 'keymap_config.json')

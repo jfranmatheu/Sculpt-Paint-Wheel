@@ -63,25 +63,25 @@ class WheelTool(PropertyGroup):
 
 
 def update_global(self, context):
-    if not self.update_flag:
+    if self.prevent_update:
         return
     if self.use_global:
-        from .. io.io import add_sculpt_toolset_to_globals
+        from ..io import add_sculpt_toolset_to_globals
         add_sculpt_toolset_to_globals(context, self)
         for tool in self.tools:
             if tool.tool:
                 tool.tool.use_fake_user = False
     else:
-        from .. io.io import remove_sculpt_toolset_from_globals
+        from ..io import remove_sculpt_toolset_from_globals
         remove_sculpt_toolset_from_globals(context, self)
         for tool in self.tools:
             if tool.tool:
                 tool.tool.use_fake_user = True
 
 def update_toolset_name(self, context):
-    if not self.update_flag or not self.use_global:
+    if self.prevent_update or not self.use_global:
         return
-    from .. io.io import update_global_sculpt_toolset_name
+    from ..io import update_global_sculpt_toolset_name
     update_global_sculpt_toolset_name(context, self)
 
 
@@ -97,7 +97,7 @@ class WheelToolset(PropertyGroup):
     active_tool : IntProperty(default=-1)
     uuid : StringProperty(default="", name="UUID")
 
-    update_flag : BoolProperty(default=True)
+    prevent_update : BoolProperty(default=True)
     export_on_save : BoolProperty(default=False, description="Save toolset data when saving .blend file (Ctrl+S)")
     #global_overwrite : BoolProperty(default=False, description="Global brushes will over-write blendfile brushes that match the name")
 

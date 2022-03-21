@@ -33,7 +33,7 @@ class SculptWheel_ActiveToolset_Options(Panel):
         box = self.layout.box()
 
         box.prop(toolset, 'name', text="Name")
-        box.prop(toolset, 'use_global', text="Global Toolset", toggle=False)
+        box.prop(toolset, 'use_global', text="Global Toolset (beta)", toggle=False)
         box.alert = True
         box.label(text="Toolset is GLOBAL" if toolset.use_global else "Toolset is LOCAL", icon="WORLD" if toolset.use_global else "FILE_BLEND")
 

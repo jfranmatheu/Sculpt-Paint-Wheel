@@ -9,7 +9,7 @@ def load_handler(dummy):
     
 def load_global_toolsets():
     print("[Sculpt+Paint Wheel] Loading GLOBAL Toolsets to project {%s}" % bpy.data.filepath)
-    from .io.io import load_global_sculpt_toolsets
+    from .io import load_global_sculpt_toolsets
     load_global_sculpt_toolsets(bpy.context)
 
 
@@ -18,7 +18,7 @@ def save_handler(dummy):
 
 def save_global_toolsets():
     print("[Sculpt+Paint Wheel] Saving GLOBAL Toolsets...")
-    from .io.io import save_all_global_sculpt_toolsets
+    from .io import save_all_global_sculpt_toolsets
     save_all_global_sculpt_toolsets(bpy.context)
 
 

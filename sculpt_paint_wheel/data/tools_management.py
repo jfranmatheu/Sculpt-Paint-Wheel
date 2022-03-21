@@ -10,10 +10,9 @@ class ToolsManagement():
         n = len(self.toolsets)
         if n >= 12:
             return
-        from data.common import WheelToolset
-        new_toolset: WheelToolset = self.toolsets.add()
+        new_toolset = self.toolsets.add()
         new_toolset.name = name if name != '' else 'Toolset_' + str(n)
-        new_toolset.uuid = uuid4() # datetime.today().strftime('%Y%m%d%H%M%S') # Inverted date and time.
+        new_toolset.uuid = datetime.today().strftime('%Y%m%d%H%M%S') # Inverted date and time.
         new_toolset.version = 0
         self.active_toolset = n
         self.toolset_list = str(n)

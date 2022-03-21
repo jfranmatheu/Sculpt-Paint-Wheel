@@ -1,4 +1,4 @@
-from .. io.io import (
+from ..io import (
     export_sculpt_toolset_data_to_lib,
     backup_all_addon_data,
     import_sculpt_toolset_data_from_lib,

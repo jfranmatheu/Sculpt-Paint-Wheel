@@ -469,9 +469,9 @@ class WEIGHT_OT_wheel(Operator):
     def set_brush_size(self, value):
         value = clamp(value, 1, 500)
         if self.ups and self.ups.use_unified_size:
-            self.ups.size = value
+            self.ups.size = int(value)
         else:
-            self.active_tool.size = value
+            self.active_tool.size = int(value)
 
     def set_brush_strength(self, value):
         value = clamp(value, 0.01, 2)

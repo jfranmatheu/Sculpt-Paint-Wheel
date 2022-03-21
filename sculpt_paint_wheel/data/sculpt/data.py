@@ -1,7 +1,6 @@
 from bpy.types import PropertyGroup, Brush, Image, UILayout
 from bpy.props import *
 from bpy import ops as OP
-from data.tools_io import ToolsIO
 from . presets import *
 from os.path import isfile, join, dirname
 from bpy.path import abspath
@@ -40,7 +39,7 @@ def update_toolset_list(self, context):
     OP.sculpt.wheel_activate_toolset(index=int(self.toolset_list))
 
 
-class SculptWheelData(PropertyGroup, ToolsManagement, ButtonsManagement, ToolsIO):
+class SculptWheelData(PropertyGroup, ToolsManagement, ButtonsManagement):
     # pos : IntVectorProperty(min=0, name="Position") # managed by operator (mouse pos.)
     num_tools : IntProperty(min=8, default=8, max=16, name="Number of Tools")
     toolsets : CollectionProperty(type=WheelToolset)

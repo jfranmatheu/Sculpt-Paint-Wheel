@@ -27,4 +27,4 @@ class Cursor:
 
     @staticmethod
     def wrap(x, y, context=bpy.context):
-        context.window.cursor_warp(x, y)
+        context.window.cursor_warp(int(x), int(y))

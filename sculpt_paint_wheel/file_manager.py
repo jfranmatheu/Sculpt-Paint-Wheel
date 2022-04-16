@@ -1,12 +1,15 @@
 import sys
 import pathlib
 from enum import Enum
-from os.path import join
+from os.path import join, dirname, exists, isdir
+from os import mkdir
 
 import bpy
 
 b3d_user_path = bpy.utils.resource_path('USER')
 b3d_config_path = join(b3d_user_path, "config")
+
+b3d_appdata_path = dirname(bpy.utils.resource_path('USER'))
 
 """
 * Linux *
@@ -60,28 +63,31 @@ def get_addondatadir() -> pathlib.Path:
 
 
 # HARDCODED. Change this to change root of user data.
-user_data = join(b3d_config_path, 'spwheel') # str((get_addondatadir() / "wheel_user_data").absolute())
+user_data = join(b3d_appdata_path, 'addon_data', 'spwheel') # str((get_addondatadir() / "wheel_user_data").absolute())
 
 class UserData(Enum):
     ROOT = user_data
-    
+
     ''' Export paths. '''
     EXPORT_DIR                  = join(user_data, 'export')
     EXPORT_SCULPT_DIR           = join(user_data, 'export', 'sculpt')
     EXPORT_SCULPT_TOOLSETS_DIR  = join(user_data, 'export', 'sculpt', 'toolsets')
     EXPORT_SCULPT_BUTTONS_DIR   = join(user_data, 'export', 'sculpt', 'buttons')
-    
+
     ''' Global data paths. '''
     GLOB_DIR                    = join(user_data, 'shared')
     GLOB_SCULPT_DIR             = join(user_data, 'shared', 'sculpt')
     GLOB_SCULPT_TOOLSETS_DIR    = join(user_data, 'shared', 'sculpt', 'toolsets')
     GLOB_SCULPT_TOOLSETS_FILE   = join(user_data, 'shared', 'sculpt', 'toolsets.json')
     GLOB_SCULPT_BUTTONS_FILE    = join(user_data, 'shared', 'sculpt', 'buttons.json')
-    
+
     ''' BACKUP path. '''
     BACKUP_DIR = join(user_data, 'backups')
-    
+
     def __call__(self, *args):
         if args:
-            return join(self.value, *args)
-        return self.value
+            path = join(self.value, *args)
+        path = self.value
+        if not exists(path) and isdir(path):
+            mkdir(path)
+        return path

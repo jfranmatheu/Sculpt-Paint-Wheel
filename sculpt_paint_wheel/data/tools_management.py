@@ -4,7 +4,9 @@ from uuid import uuid4
 
 class ToolsManagement():
     def get_active_toolset(self):
-        return self.toolsets[self.active_toolset] if self.active_toolset != -1 else None
+        if self.active_toolset < 0 or self.active_toolset >= len(self.toolsets):
+            return None
+        return self.toolsets[self.active_toolset]
 
     def add_toolset(self, name):
         n = len(self.toolsets)

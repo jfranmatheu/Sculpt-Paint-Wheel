@@ -1,3 +1,4 @@
+from json import tool
 from bpy.types import PropertyGroup, Brush, Image, UILayout
 from bpy.props import *
 from bpy import ops as OP
@@ -59,3 +60,9 @@ class SculptWheelData(PropertyGroup, ToolsManagement, ButtonsManagement):
     def load_default_custom_buttons(self):
         from . defaults import def_buttons
         super().load_default_custom_buttons(def_buttons)
+
+    def has_toolset(self, toolset_idname: str) -> bool:
+        for toolset in self.toolsets:
+            if toolset_idname == toolset.uuid:
+                return True
+        return False

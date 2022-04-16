@@ -28,8 +28,9 @@ auto_load.init()
 
 
 def gen_config():
-    from . file_manager import get_addondatadir
-    addon_data_path = get_addondatadir()
+    from . file_manager import user_data
+    from pathlib import Path
+    addon_data_path = Path(user_data)
     if addon_data_path.exists():
         return
     addon_data_path.mkdir(parents=True)

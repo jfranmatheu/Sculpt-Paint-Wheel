@@ -18,15 +18,13 @@ global_sculpt_toolset_dir = join(global_data_dir, 'sculpt_toolsets')
 global_sculpt_toolsets_data = join(global_sculpt_toolset_dir, 'toolsets.json')
 '''
 
-def read_json_file(filepath):
-    data = {}
+def read_json_file(filepath) -> dict or None:
     with open(filepath, 'r') as f:
         raw_data = f.read()
         if raw_data:
             json_data = json.loads(raw_data)
             if json_data and isinstance(json_data, dict):
-                data = json_data 
-    return data
+                return json_data
 
 def add_sculpt_toolset_to_globals(context, toolset):
     save_global_sculpt_toolset(context, toolset)
@@ -197,16 +195,34 @@ def load_global_sculpt_toolsets(context, toolsets=None):
     print("[SCULPTWHEEL] Successfully loaded global SculptWheel toolsets from", data_filepath)
     return True
 
+
 def reload_global_toolsets(context):
+    active_brush_name = context.tool_settings.sculpt.brush.name
+
     # Clear toolsets.
     sculpt_wheel = context.scene.sculpt_wheel
-    global_toolsets = [ts for ts in sculpt_wheel.toolsets if ts.use_global]
-    for toolset in global_toolsets:
+    # Ensure we loop in reserve so remove by index doesn't break the following removes.
+    toolset_idx_reversed = len(sculpt_wheel.toolsets) - 1
+    for toolset in reversed(sculpt_wheel.toolsets):
+        if not toolset.use_global:
+            continue
         while toolset.tools:
             toolset.remove_tool(0, True)
-        sculpt_wheel.toolsets.remove(0)
+        sculpt_wheel.toolsets.remove(toolset_idx_reversed)
+        toolset_idx_reversed -= 1
+
     # Load toolsets.
     load_global_sculpt_toolsets(context)
+
+    # Avoid Void tool/brush.
+    if not context.tool_settings.sculpt.brush:
+        brush = bpy.data.brushes.get(active_brush_name, None)
+        if brush:
+            context.tool_settings.sculpt.brush = brush
+        else:
+            bpy.ops.wm.tool_set_by_id(name="builtin_brush.Draw")
+    context.area.tag_redraw()
+
 
 def reload_active_global_toolset(context):
     # Clear toolsets.
@@ -214,6 +230,8 @@ def reload_active_global_toolset(context):
     toolset = sculpt_wheel.get_active_toolset()
     if not toolset:
         return False
+
+    active_brush_name = context.tool_settings.sculpt.brush.name
     
     toolset_id = toolset.uuid
     while toolset.tools:
@@ -282,6 +300,14 @@ def reload_active_global_toolset(context):
             else:
                 toolset.add_tool(tool, is_brush=False)
 
+    
+    if not context.tool_settings.sculpt.brush:
+        brush = bpy.data.brushes.get(active_brush_name, None)
+        if brush:
+            context.tool_settings.sculpt.brush = brush
+        else:
+            bpy.ops.wm.tool_set_by_id(name="builtin_brush.Draw")
+    context.area.tag_redraw()
     return True
 
 def save_active_global_toolset(context):

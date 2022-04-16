@@ -75,7 +75,13 @@ class SculptWheel_Toolsets_GeneralOptions(Panel):
 
     def draw(self, context):
         layout = self.layout
-        
+
+        col = layout.column(align=True)
+        box = col.box()
+        box.label(text="Toolset Management", icon='ASSET_MANAGER')
+        box = col.box()
+        box.operator('io.reload_global_toolsets', text="Load / Reload GLOBAL Toolsets", icon='FILE_REFRESH')
+
         col = layout.column(align=True)
         box = col.box()
         box.label(text="Toolset Library - Import/Export", icon='OUTPUT')
@@ -83,9 +89,3 @@ class SculptWheel_Toolsets_GeneralOptions(Panel):
         box.operator('io.export_active_toolset', text="Export ACTIVE Toolset", icon='EXPORT')
         box.operator('io.export_all_toolsets', text="Export ALL Toolsets", icon='EXPORT')
         box.operator('io.import_toolset', text="Import Toolset", icon='IMPORT')
-        
-        col = layout.column(align=True)
-        box = col.box()
-        box.label(text="Toolset Management", icon='ASSET_MANAGER')
-        box = col.box()
-        box.operator('io.reload_global_toolsets', text="Reload GLOBAL Toolsets", icon='FILE_REFRESH')

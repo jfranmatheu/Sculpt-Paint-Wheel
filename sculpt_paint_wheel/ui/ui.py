@@ -164,6 +164,10 @@ class SculptWheelToolsets(Panel):
             return
 
         active_toolset = wheel_data.get_active_toolset()
+        if not active_toolset:
+            layout.label(text="Create a toolset to start:")
+            layout.operator('sculpt.wheel_add_toolset', text="Create Toolset")
+            return
 
         main_col = layout.column(align=True)
         

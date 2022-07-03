@@ -1,4 +1,4 @@
-from bpy.types import Operator, UILayout as UI, SpaceView3D
+from bpy.types import Operator, UILayout as UI, SpaceView3D, SpaceImageEditor
 from bl_ui.properties_paint_common import UnifiedPaintPanel
 from .. px.paint import *
 from mathutils import Color, Vector
@@ -19,7 +19,10 @@ class PAINT_OT_wheel(Operator):
 
     def finish(self, context=None):
         if hasattr(self, '_handler'):
-            SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
+            if self.ctx_area.type == 'IMAGE_EDITOR':
+                SpaceImageEditor.draw_handler_remove(self._handler, 'WINDOW')
+            else:
+                SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
             del self._handler
         self.set_show_brush(context, True)
         Cursor.set_icon(context, CursorIcon.DEFAULT)
@@ -229,6 +232,7 @@ class PAINT_OT_wheel(Operator):
 
 
     def invoke(self, context, event):
+        print("Paint Wheel")
         if not UnifiedPaintPanel.paint_settings(context) and not is_gpencil(context):
             return {'FINISHED'}
         mode_settings = self.get_tool_settings(context)
@@ -292,7 +296,10 @@ class PAINT_OT_wheel(Operator):
         if not context.window_manager.modal_handler_add(self):
             return {'CANCELLED'}
         self.set_show_brush(context, False)
-        self._handler = SpaceView3D.draw_handler_add(draw_callback_px, (self, context, origin), 'WINDOW', 'POST_PIXEL')
+        if context.area == 'IMAGE_EDITOR':
+            self._handler = SpaceImageEditor.draw_handler_add(draw_callback_px, (self, context, origin), 'WINDOW', 'POST_PIXEL')
+        else:
+            self._handler = SpaceView3D.draw_handler_add(draw_callback_px, (self, context, origin), 'WINDOW', 'POST_PIXEL')
         context.area.tag_redraw()
         return {'RUNNING_MODAL'}
     

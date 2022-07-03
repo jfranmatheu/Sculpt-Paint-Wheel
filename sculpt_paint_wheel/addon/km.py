@@ -51,7 +51,7 @@ def get_keyitem_mode(context, mode):
     mode = modes[mode]
     return context.window_manager.keyconfigs.user.keymaps[mode['km']].keymap_items.get(mode['op'], None)
 
-addon_keymaps = []
+#addon_keymaps = []
 def register():
     from bpy import context as C
     cfg = C.window_manager.keyconfigs.addon
@@ -61,7 +61,7 @@ def register():
         else:
             km = cfg.keymaps[val['km']]
         kmi = km.keymap_items.new(val['op'], type="SPACE", value = "PRESS")
-        addon_keymaps.append(km)
+        #addon_keymaps.append(km)
 
         #kmi.properties.name = "editor_switcher_pie_menu"
         #if not cfg.keymaps.__contains__(val['km']):
@@ -72,14 +72,14 @@ def register():
         #kmi.new(val['op'], 'SPACE', 'PRESS')
 
 def unregister():
-    import bpy
-    wm = bpy.context.window_manager
-    for km in addon_keymaps:
-        for kmi in km.keymap_items:
-            km.keymap_items.remove(kmi)
-        wm.keyconfigs.addon.keymaps.remove(km)
-    addon_keymaps.clear()
-    return
+    #import bpy
+    #wm = bpy.context.window_manager
+    #for km in addon_keymaps:
+    #    for kmi in km.keymap_items:
+    #        km.keymap_items.remove(kmi)
+    #    wm.keyconfigs.addon.keymaps.remove(km)
+    #addon_keymaps.clear()
+    #return
 
     cfg = C.window_manager.keyconfigs.addon
     for val in modes.values():

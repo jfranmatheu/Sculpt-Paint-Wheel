@@ -296,7 +296,8 @@ class PAINT_OT_wheel(Operator):
         if not context.window_manager.modal_handler_add(self):
             return {'CANCELLED'}
         self.set_show_brush(context, False)
-        if context.area == 'IMAGE_EDITOR':
+        print(context.area.type)
+        if context.area.type == 'IMAGE_EDITOR':
             self._handler = SpaceImageEditor.draw_handler_add(draw_callback_px, (self, context, origin), 'WINDOW', 'POST_PIXEL')
         else:
             self._handler = SpaceView3D.draw_handler_add(draw_callback_px, (self, context, origin), 'WINDOW', 'POST_PIXEL')

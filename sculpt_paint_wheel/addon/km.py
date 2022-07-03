@@ -1,4 +1,10 @@
 modes = {
+    'PAINT_TEXTURE_2' : {
+        'label' : 'Texture Paint',
+        'km' : 'Image Paint',
+        'op' : 'paint.wheel',
+        'alt': True,
+    },
     'PAINT_TEXTURE' : {
         'label' : 'Texture Paint',
         'km' : 'Image Paint',
@@ -60,7 +66,7 @@ def register():
             km = cfg.keymaps.new(name=val['km'], space_type='EMPTY', region_type='WINDOW')
         else:
             km = cfg.keymaps[val['km']]
-        kmi = km.keymap_items.new(val['op'], type="SPACE", value = "PRESS")
+        kmi = km.keymap_items.new(val['op'], type="SPACE", value = "PRESS", alt=int('alt' in val))
         #addon_keymaps.append(km)
 
         #kmi.properties.name = "editor_switcher_pie_menu"
@@ -72,7 +78,7 @@ def register():
         #kmi.new(val['op'], 'SPACE', 'PRESS')
 
 def unregister():
-    #import bpy
+    import bpy
     #wm = bpy.context.window_manager
     #for km in addon_keymaps:
     #    for kmi in km.keymap_items:
@@ -81,7 +87,7 @@ def unregister():
     #addon_keymaps.clear()
     #return
 
-    cfg = C.window_manager.keyconfigs.addon
+    cfg = bpy.context.window_manager.keyconfigs.addon
     for val in modes.values():
         if cfg.keymaps.__contains__(val['km']):
             for kmi in cfg.keymaps[val['km']].keymap_items:

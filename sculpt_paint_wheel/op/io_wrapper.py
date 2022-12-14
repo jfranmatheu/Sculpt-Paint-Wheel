@@ -1,4 +1,4 @@
-from ..io import (
+from ..spw_io import (
     export_sculpt_toolset_data_to_lib,
     backup_all_addon_data,
     import_sculpt_toolset_data_from_lib,

@@ -2,7 +2,7 @@ from bpy.types import Operator, UILayout as UI
 from bl_ui.properties_paint_common import UnifiedPaintPanel
 from .. px.sculpt import *
 from mathutils import Color, Vector
-from math import cos, sin, tan, pi, degrees, atan, floor
+from math import cos, sin, tan, pi, degrees, atan, floor, ceil
 from .. gui_types.button import ButtonCircle
 from .. data.icons import get_button_icon, ButtonIcon, get_tool_icon, DefToolImage
 from .. utils import * #CursorIcon, Cursor, Anim, Ease, rotate_point_around_point, clear_image
@@ -418,10 +418,13 @@ class SCULPT_OT_wheel(Operator):
         self.can_close = not self.prefs.keep_open
         self.active_toolset = self.wheel.get_active_toolset()
         self.theme = self.prefs.theme
+
+        # Load toolsets.
         if not self.active_toolset:
-            self.active_toolset = self.wheel.add_toolset("Default")
-            # self.active_toolset.add_tool(active_tool)
-            self.active_toolset.load_default_tools()
+            bpy.ops.sculpt.wheel_init_toolsets()
+            self.active_toolset = self.wheel.get_active_toolset()
+            if not self.active_toolset:
+                return {'CANCELLED'}
 
         wheel_rad = self.rad = self.prefs.radius
         win_h = context.window.height
@@ -431,7 +434,21 @@ class SCULPT_OT_wheel(Operator):
             self.dpi_factor = win_h / 1057 # 1057 without title bar of app.
             self.rad *= self.dpi_factor
 
+
+        # Purge possible invalid tools:
+        invalid_tools = []
+        for idx, t in enumerate(self.active_toolset.tools):
+            if t.idname:
+                continue
+            if t.tool is None:
+                invalid_tools.append(idx)
+        if invalid_tools:
+            for tool in invalid_tools:
+                self.active_toolset.remove_tool(tool)
+
+
         self.num_tools = max(7, len(self.active_toolset.tools))
+        self.use_two_tool_circles = self.num_tools > 16
         self.tool_padding = 20 * self.dpi_factor
         self.num_tools_inner = 0
         off_outter = self.tool_padding * self.num_tools * self.rad / 180
@@ -452,31 +469,75 @@ class SCULPT_OT_wheel(Operator):
 
         origin = Vector((event.mouse_region_x, event.mouse_region_y))
 
-        angle = radians(360 / self.num_tools)
-        self.toolcircle_outer_rad = self.rad * .925
-        self.tool_rad = getr_big_small_circles_3(self.toolcircle_outer_rad, self.num_tools)
-        self.tool_rad = clamp(self.tool_rad, 24, 32) if self.rad < 200 else self.tool_rad * .8
-        #self.tool_rad *= self.prefs.tool_icon_scale
-        self.toolcircle_rad = self.toolcircle_outer_rad - self.tool_rad
-        self.toolcircle_inner_rad = self.toolcircle_outer_rad - self.tool_rad * 2.0
+        
+
+        if self.use_two_tool_circles:
+            self.rad *= 1.2
+            self.toolcircle_outer_rad = self.rad * .935
+            tool_circle_counts = (
+                ceil(self.num_tools * .6), # outer
+                ceil(self.num_tools * .4)  # inner
+            )
+            diff_count = self.num_tools - (tool_circle_counts[0] + tool_circle_counts[1])
+            if diff_count != 0:
+                tool_circle_counts = (
+                    tool_circle_counts[0],
+                    tool_circle_counts[1] + diff_count
+                )
+            self.tool_rad = getr_big_small_circles_3(self.toolcircle_outer_rad, self.num_tools) * 1.5
+            self.tool_rad = clamp(self.tool_rad, 24, 30) if self.rad < 400 else self.tool_rad * .8
+            toolcircle_rad = self.toolcircle_outer_rad - self.tool_rad
+            self.toolcircle_rad = tool_circle_rads = (
+                toolcircle_rad,
+                toolcircle_rad - self.tool_rad * 2.0
+            )
+            self.tool_circle_counts = tool_circle_counts
+            self.toolcircle_inner_rad = self.toolcircle_outer_rad - self.tool_rad * 2.0 * 2.0 * .95
+        else:
+            self.toolcircle_outer_rad = self.rad * .925
+            self.tool_rad = getr_big_small_circles_3(self.toolcircle_outer_rad, self.num_tools)
+            self.tool_rad = clamp(self.tool_rad, 24, 32) if self.rad < 200 else self.tool_rad * .8
+            #self.tool_rad *= self.prefs.tool_icon_scale
+            self.toolcircle_rad = self.toolcircle_outer_rad - self.tool_rad
+            self.toolcircle_inner_rad = self.toolcircle_outer_rad - self.tool_rad * 2.0
 
         self.tool_pos = []
-        point = Vector((origin.x, origin.y + self.toolcircle_rad))
-        self.tool_pos.append(point)
-        #tick = True
-        #f_rad = self.tool_rad * .25
-        for i in range(1, self.num_tools):
-            point = rotate_point_around_point(origin, point, -angle)
-            #if tick:
-            #    self.tool_pos.append(point - direction_from_to(point, origin) * f_rad)
-            #else:
-            self.tool_pos.append(point)
-            #tick = not tick
+        if self.use_two_tool_circles:
 
+            #half_num_tools = ceil(self.num_tools * .5)
+            #angle = radians(360 / half_num_tools)
+            for i in range(2):
+                prev_angle = 0
+                tool_count = tool_circle_counts[i]
+                angle = radians(360 / tool_count)
+                tool_rad = tool_circle_rads[i]
+                point = Vector((origin.x, origin.y + tool_rad))
+                if i != 0:
+                    point = rotate_point_around_point(origin, point, -prev_angle/2 * i)
+                self.tool_pos.append(point)
+                for i in range(1, tool_count):
+                    point = rotate_point_around_point(origin, point, -angle)
+                    self.tool_pos.append(point)
+                prev_angle = angle
+        else:
+            angle = radians(360 / self.num_tools)
+            point = Vector((origin.x, origin.y + self.toolcircle_rad))
+            self.tool_pos.append(point)
+            #tick = True
+            #f_rad = self.tool_rad * .25
+            for i in range(1, self.num_tools):
+                point = rotate_point_around_point(origin, point, -angle)
+                #if tick:
+                #    self.tool_pos.append(point - direction_from_to(point, origin) * f_rad)
+                #else:
+                self.tool_pos.append(point)
+                #tick = not tick
+
+        
         self.color_ring_rad = self.toolcircle_inner_rad * .85
         self.color_rect_rad = self.color_ring_rad * .55
         self.tarta_rad = self.color_ring_rad * .7
-        
+
         if wheel_rad > 150 and wheel_rad < 200 and self.dpi_factor < 1.05 and self.dpi_factor > .95:
             self.gestual_pad_rad = 36 if self.prefs.gesturepad_mode == 'SIMPLE' else 32 # self.color_rect_rad # min(36, self.color_ring_rad * .45)
             self.text_size = 12
@@ -559,8 +620,8 @@ class SCULPT_OT_wheel(Operator):
         # Tarta.
         num_pieces = len(self.wheel.custom_buttons)
         if num_pieces == 0:
-            self.wheel.load_default_custom_buttons()
-            num = 8
+            self.wheel.load_custom_buttons()
+            num = len(self.wheel.custom_buttons)
         else:
             num = min(10, max(4, num_pieces))
             num = num if num % 2 == 0 else num + 1

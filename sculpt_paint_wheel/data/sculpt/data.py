@@ -61,6 +61,16 @@ class SculptWheelData(PropertyGroup, ToolsManagement, ButtonsManagement):
         from . defaults import def_buttons
         super().load_default_custom_buttons(def_buttons)
 
+    def clear_custom_buttons(self):
+        self.custom_buttons.clear()
+
+    def load_custom_buttons(self, context):
+        from ...spw_io import check_sculpt_custom_buttons, load_custom_buttons
+        if check_sculpt_custom_buttons():
+            load_custom_buttons(context)
+        else:
+            self.load_default_custom_buttons()
+
     def has_toolset(self, toolset_idname: str) -> bool:
         for toolset in self.toolsets:
             if toolset_idname == toolset.uuid:

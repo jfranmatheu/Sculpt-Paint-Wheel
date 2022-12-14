@@ -1,6 +1,7 @@
 from bpy.types import Panel
 from bl_ui.properties_paint_common import brush_settings
 
+
 class SculptWheelTool_ContextMenu(Panel):
     bl_idname = "SCULPTWHEEL_PT_show_tool_context_menu"
     bl_label = "Tool Settings"
@@ -46,14 +47,14 @@ class SculptWheel_ActiveToolset_Options(Panel):
             #box.prop(toolset, 'global_overwrite', text="Overwrite brushes on (re)load")
             #box.operator('io.export_active_toolset', text="Reload (import changes)", icon='FILE_REFRESH')
 
-        box = self.layout.box()
-        box.operator('io.export_active_toolset', text="Export as Library", icon='EXPORT')
+        ## box = self.layout.box()
+        ## box.operator('io.export_active_toolset', text="Export as Library", icon='EXPORT')
 
         box = self.layout.box()
         box.alert = True
         box.label(text="Danger Zone", icon='ERROR')
         row = box.row(align=False)
-        row.operator('sculpt.wheel_load_default_tools', text="Reset", icon='FILE_REFRESH')
+        ## row.operator('sculpt.wheel_load_default_tools', text="Reset", icon='FILE_REFRESH')
         if toolset.use_global:
             col = box.column(align=True)
             col.operator('sculpt.wheel_remove_active_toolset', text="Remove Locally", icon='TRASH').remove_globally = False

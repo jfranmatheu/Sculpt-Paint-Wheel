@@ -25,7 +25,7 @@ def DiIMGA(_p,_s,_i,s=SH.IMGA()):b=bat(s,SType.TRIFAN(),SGeom.IMG(_p,_s));s.bind
 def DiIMGAMMA(_p,_s,_i,s=SH.IMGA_GAMMA()):DiIMGA(_p,_s,_i,s)
 #def DiIMGAMMA_OP(_p,_s,_o,_i,s=SH.IMGA_GAMMA_OP()):b=bat(s,SType.TRIFAN(),SGeom.IMG(_p,_s));glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D,_i);s.bind();s.uniform_float('o',_o);s.uniform_int(_I, 0);SetBlend();b.draw(s);RstBlend()
 def DiIMGAMMA_OP(_p,_s,_o,_i,s=SH.IMGA_GAMMA_OP()):b=bat(s,SType.TRIFAN(),SGeom.IMG(_p,_s));s.bind();s.uniform_float('o',_o);s.uniform_sampler('image',_i);SetBlend();b.draw(s);RstBlend()
-def DiL(_p1,_p2,_color=(0,0,0,0.8),s=Shader2D.UNIFORM()):b=bat(s,SType.LINES(),{_B:[_p1,_p2]});s.bind();s.uniform_float(_C,_color);SetBlend();b.draw(s);RstBlend()
+def DiL(_p1,_p2,_color=(0,0,0,0.8),_lt=1.0,s=Shader2D.UNIFORM()):b=bat(s,SType.LINES(),{_B:[_p1,_p2]});s.bind();s.uniform_float(_C,_color);SetLine(_lt);SetBlend();b.draw(s);RstBlend();RstLine()
 shLs=Shader2D.UNIFORM()
 def DiLs(_color=(0,0,0,0.8),*_points):b=bat(shLs,SType.LINES(),{_B:list(_points)});shLs.bind();shLs.uniform_float(_C,_color);SetBlend();b.draw(shLs);RstBlend()
 def DiLs_(_color=(0,0,0,0.8),*_points):b=bat(shLs,SType.LINES(),{_B:_points});shLs.bind();shLs.uniform_float(_C,_color);SetBlend();b.draw(shLs);RstBlend()
@@ -39,3 +39,4 @@ def DiPKCO(_c,_r,_h,s=SH.RTCROMASLIN()):SetPointBlend(_r*2);b=bat(s,SType.POINTS
 def DiANILLOW(_c,_r,s=SH.RNGCROMALINW()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));b.draw(s);RstPointBlend()
 def DiCFSTOP(_c,_r,_co,s=SH.CFS_CROPTOP()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));s.bind();s.uniform_float(_A,_co);b.draw(s);RstPointBlend()
 def DiCFSBOT(_c,_r,_co,s=SH.CFS_CROPBOT()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));s.bind();s.uniform_float(_A,_co);b.draw(s);RstPointBlend()
+def DiRNGBLRANG(_c,_r,_t,_f,_co,_ang1,_ang2,s=SH.RNGBLRANG()):SetPointBlend(_r*2);b=bat(s,SType.POINTS(),SGeom.CIR(_c));s.bind();s.uniform_float(_A,_co);s.uniform_float('t',_t);s.uniform_float('f',_f);s.uniform_float('ang1',_ang1);s.uniform_float('ang2',_ang2);b.draw(s);RstPointBlend()

@@ -24,6 +24,12 @@ class ToolsManagement():
     def get_toolset(self, name):
         return self.toolsets.get(name, None)
 
+    def get_global_toolsets(self):
+        return [ts for ts in self.toolsets if ts.use_global]
+
+    def global_toolset_count(self):
+        return len(self.get_global_toolsets())
+
     def get_toolset_index(self, name):
         i = 0
         for ts in self.toolsets:
@@ -39,7 +45,7 @@ class ToolsManagement():
 
             ts = self.toolsets[toolset]
             if ts.use_global and remove_global:
-                from ..io import remove_sculpt_toolset_from_globals
+                from ..spw_io import remove_sculpt_toolset_from_globals
                 remove_sculpt_toolset_from_globals(None, ts)
 
             self.toolsets.remove(toolset)

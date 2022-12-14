@@ -120,6 +120,26 @@ def save_all_global_sculpt_toolsets(context):
     # Write buttons data to datafile.
     write_to_file(data, data_filepath)
 
+
+def check_global_sculpt_toolsets() -> int:
+    data_filepath = join(UserData.GLOB_SCULPT_DIR(), "toolsets.json")
+    if not exists(data_filepath) or not isfile(data_filepath):
+        return 0
+
+    raw_data = ''
+    with open(data_filepath, 'r') as f:
+        raw_data = f.read()
+
+    if not raw_data:
+        return 0
+
+    data: dict = json.loads(raw_data)
+    if not data or not isinstance(data, dict):
+        return 0
+
+    return len(data)
+
+
 def load_global_sculpt_toolsets(context, toolsets=None):
     data_filepath = join(UserData.GLOB_SCULPT_DIR(), "toolsets.json")
     if not exists(data_filepath):
@@ -649,3 +669,78 @@ def backup_all_addon_data(ctx):
         out.write(str(bl_info['version']))
     
     return True
+
+
+def save_custom_buttons(ctx):
+    from os.path import basename
+    from shutil import copyfile
+    import uuid
+
+    # Get data path.
+    folder = UserData.EXPORT_SCULPT_BUTTONS_DIR()
+    data_filepath = join(folder, 'custom_buttons.json')
+    images_filepath = UserData.EXPORT_SCULPT_BUTTON_ICONS_DIR()
+    
+    # Construct dictionary and fill with buttons data.
+    data = {}
+    for button in ctx.scene.sculpt_wheel.custom_buttons:
+        b_image_path = button.image_path
+        if exists(b_image_path) and isfile(b_image_path):
+            # Copy icon to our data folder.
+            new_b_image_path = join(images_filepath, basename(b_image_path))
+            if not exists(new_b_image_path):
+                copyfile(b_image_path, new_b_image_path)
+            b_image_path = new_b_image_path
+        else:
+            b_image_path = ''
+        if button.id == '':
+            button.id = uuid.uuid4().hex
+        data[button.id] = {
+            'name': button.name,
+            'attr' : button.attr,
+            'type' : button.type,
+            'popup_type' : button.popup_type,
+            'image_path' : b_image_path,
+            'as_attribute' : button.as_attribute,
+            'preset_menu' : button.preset_menu,
+            'preset_panel' : button.preset_panel,
+            'preset_operator' : button.preset_operator,
+            'custom_identifier' : button.custom_identifier,
+            'index' : button.index,
+            #'show_settings' : button.show_settings
+        }
+
+    # Write buttons data to datafile.
+    write_to_file(data, data_filepath)
+
+
+def check_sculpt_custom_buttons() -> bool:
+    # Get data path.
+    folder = UserData.EXPORT_SCULPT_BUTTONS_DIR()
+    data_filepath = join(folder, 'custom_buttons.json')
+
+    return exists(data_filepath) and isfile(data_filepath)
+
+
+def load_custom_buttons(ctx):
+    if not check_sculpt_custom_buttons():
+        return
+
+    # Get data path.
+    folder = UserData.EXPORT_SCULPT_BUTTONS_DIR()
+    data_filepath = join(folder, 'custom_buttons.json')
+    
+    sculpt_wheel = ctx.scene.sculpt_wheel
+    sculpt_wheel.clear_custom_buttons()
+    
+    data = read_json_file(data_filepath)
+    if not data:
+        return
+
+    for but_id, but_data in data.items():
+        but = sculpt_wheel.custom_buttons.add()
+        but.id = but_id
+        for attr, value in but_data.items():
+            if not hasattr(but, attr):
+                continue
+            setattr(but, attr, value)

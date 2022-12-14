@@ -158,15 +158,20 @@ class SculptWheelToolsets(Panel):
 
         wheel_data = scn.sculpt_wheel
 
-        if wheel_data.active_toolset == -1:
-            layout.label(text="Create a toolset to start:")
-            layout.operator('sculpt.wheel_add_toolset', text="Create Toolset")
-            return
-
-        active_toolset = wheel_data.get_active_toolset()
-        if not active_toolset:
-            layout.label(text="Create a toolset to start:")
-            layout.operator('sculpt.wheel_add_toolset', text="Create Toolset")
+        if wheel_data.active_toolset == -1 or (active_toolset := wheel_data.get_active_toolset()) is None:
+            #layout.label(text="Create a toolset to start:")
+            #layout.operator('sculpt.wheel_add_toolset', text="Create Toolset")
+            from ..spw_io import check_global_sculpt_toolsets
+            if (global_toolset_count := check_global_sculpt_toolsets()) > 0:
+                layout.label(text="Global toolsets detected ! (" + global_toolset_count + ')')
+                row = layout.row()
+                row.scale_y = 2.5
+                row.operator('io.reload_global_toolsets', text="Load GLOBAL Toolsets", icon='IMPORT')
+            else:
+                layout.label(text="Initialize Default Toolset")
+                row = layout.row()
+                row.scale_y = 2.5
+                row.operator('sculpt.wheel_create_default_toolset', text="Initialize", icon='FILE_REFRESH')
             return
 
         main_col = layout.column(align=True)
@@ -178,9 +183,9 @@ class SculptWheelToolsets(Panel):
         
         toolset_row.popover('SCULPTWHEEL_PT_show_toolset_options', text="", icon='PROPERTIES')
         
-        toolset_row.label(text="", icon='DISCLOSURE_TRI_RIGHT')
+        ##toolset_row.label(text="", icon='BLANK1')
         
-        toolset_row.popover('SCULPTWHEEL_PT_show_general_toolset_options', text="", icon='COLLAPSEMENU')
+        ##toolset_row.popover('SCULPTWHEEL_PT_show_general_toolset_options', text="", icon='COLLAPSEMENU')
         
         #main_col.label(text=active_toolset.name)
         main_col.template_list("SCULPTWHEEL_UL_toolset_slots", "", active_toolset, "tools", active_toolset, "active_tool", type='DEFAULT') #, type='GRID', columns=3)
@@ -209,6 +214,15 @@ class SculptWheelCustomButtons(Panel):
         wheel_data = scn.sculpt_wheel
         create = wheel_data.create_custom_button
         buttons = wheel_data.custom_buttons
+
+        if len(buttons) == 0:
+            from ..spw_io import check_sculpt_custom_buttons
+            if check_sculpt_custom_buttons():
+                layout.operator('sculpt.wheel_load_custom_buttons', text="Load Buttons")
+            else:
+                layout.operator('sculpt.wheel_load_custom_buttons', text="Initialize Default Buttons")
+            layout.scale_y = 2.5
+            return
 
         if len(buttons) != 0:
             box = layout.box().column(align=True)
@@ -309,7 +323,11 @@ class SculptWheelCustomButtons(Panel):
         box.operator('sculpt.wheel_add_custom_button', text="Create Button")
         
         box = layout.box()
-        box.operator('sculpt.wheel_load_default_custom_buttons', text="Reset to default")
+        row = box.row()
+        row.operator('sculpt.wheel_save_custom_buttons', text="S A V E")
+        row.operator('sculpt.wheel_load_custom_buttons', text="R E S E T")
+        row = box.row()
+        row.operator('sculpt.wheel_load_default_custom_buttons', text="Reset to default")
 
 
 class SculptWheelSettings(Panel):

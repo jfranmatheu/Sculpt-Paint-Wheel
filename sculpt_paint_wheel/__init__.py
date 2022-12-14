@@ -18,7 +18,7 @@ bl_info = {
     "author": "J. Fran Matheu (@jfranmatheu)",
     "description": "Enhance your workflow with this awesome sculpt+paint wheel!",
     "blender": (3, 3, 0),
-    "version": (2, 4, 1),
+    "version": (3, 0, 0),
     "location": "Hold 'Space' inside 3D Viewport in Sculpt/Texture/Vertex/Weight modes. // 3D Viewport > Sidebar ('N') > 'Sculpt'/'Paint' tab > 'Sculpt Wheel'/'Paint Wheel'",
     "warning": "Versions are X.Y.Z, where X is for main version, Y for subversion (bugfixes) and Z for alpha/beta development (0 on release versions).",
     "category": "Interface"
@@ -31,16 +31,15 @@ def gen_config():
     from . file_manager import user_data
     from pathlib import Path
     addon_data_path = Path(user_data)
-    if addon_data_path.exists():
-        return
-    addon_data_path.mkdir(parents=True)
+    if not addon_data_path.exists():
+        addon_data_path.mkdir(parents=True, exist_ok=True)
     from . file_manager import UserData
     from os import makedirs
-    makedirs(UserData.GLOB_SCULPT_TOOLSETS_DIR())
-    makedirs(UserData.BACKUP_DIR())
-    makedirs(UserData.EXPORT_SCULPT_TOOLSETS_DIR())
-    makedirs(UserData.EXPORT_SCULPT_BUTTONS_DIR())
-
+    makedirs(UserData.GLOB_SCULPT_TOOLSETS_DIR(), exist_ok=True)
+    makedirs(UserData.BACKUP_DIR(), exist_ok=True)
+    makedirs(UserData.EXPORT_SCULPT_TOOLSETS_DIR(), exist_ok=True)
+    makedirs(UserData.EXPORT_SCULPT_BUTTONS_DIR(), exist_ok=True)
+    makedirs(UserData.EXPORT_SCULPT_BUTTON_ICONS_DIR(), exist_ok=True)
 
 def register():
     gen_config()

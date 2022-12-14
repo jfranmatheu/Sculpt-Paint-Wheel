@@ -9,7 +9,7 @@ def load_handler(dummy):
     
 def load_global_toolsets():
     print("[Sculpt+Paint Wheel] Loading GLOBAL Toolsets to project {%s}" % bpy.data.filepath)
-    from .io import load_global_sculpt_toolsets
+    from .spw_io import load_global_sculpt_toolsets
     load_global_sculpt_toolsets(bpy.context)
 
 
@@ -18,14 +18,14 @@ def save_handler(dummy):
 
 def save_global_toolsets():
     print("[Sculpt+Paint Wheel] Saving GLOBAL Toolsets...")
-    from .io import save_all_global_sculpt_toolsets
+    from .spw_io import save_all_global_sculpt_toolsets
     save_all_global_sculpt_toolsets(bpy.context)
 
 
 def register_handlers():
     ''' TO INIT GLOBAL TOOLSETS ON .BLEND LOAD. '''
-    if load_handler not in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.append(load_handler)
+    #if load_handler not in bpy.app.handlers.load_post:
+    #    bpy.app.handlers.load_post.append(load_handler)
     
     ''' IF SAVE DATA ON PROJECT SAVE. '''
     if save_handler not in bpy.app.handlers.save_post:
@@ -36,7 +36,7 @@ def register_handlers():
 
 
 def unregister_handlers():
-    if load_handler in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.remove(load_handler)
+    #if load_handler in bpy.app.handlers.load_post:
+    #    bpy.app.handlers.load_post.remove(load_handler)
     if save_handler in bpy.app.handlers.save_post:
         bpy.app.handlers.save_post.remove(save_handler)

@@ -37,7 +37,7 @@ class SCULPT_OT_wheel_add_tool(Operator):
 
     def execute(self, context):
         from bpy import data as D
-        brush = D.brushes.get(tool, None)
+        brush = D.brushes.get(self.tool, None)
         if brush:
             context.scene.sculpt_wheel.get_active_toolset().add_tool(brush)
         return {'FINISHED'}
@@ -116,6 +116,36 @@ class SCULPT_OT_wheel_activate_toolset(Operator):
         #context.scene.sculpt_wheel.toolset_list = str(len(toolsets))
         return {'FINISHED'}
 
+class SCULPT_OT_wheel_toolset_mark_as_global(Operator):
+    bl_idname = "sculpt.wheel_toolset_mark_as_global"
+    bl_label = "Sculpt Wheel: Mark as Global Toolset"
+    bl_description = "Mark Active Toolset as Global"
+
+    def execute(self, context):
+        ts = context.scene.sculpt_wheel.get_active_toolset()
+        if not ts or ts.use_global:
+            return {'CANCELLED'}
+        ts.use_global = True
+        import bpy
+        bpy.ops.io.save_active_global_toolset()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_toolset_mark_as_local(Operator):
+    bl_idname = "sculpt.wheel_toolset_mark_as_local"
+    bl_label = "Sculpt Wheel: Mark as Local Toolset"
+    bl_description = "Mark Active Toolset as Local"
+
+    def execute(self, context):
+        ts = context.scene.sculpt_wheel.get_active_toolset()
+        if not ts or not ts.use_global:
+            return {'CANCELLED'}
+        ts.use_global = False
+        # import bpy
+        # bpy.ops.io.save_active_global_toolset()
+        return {'FINISHED'}
+
+
 class SCULPT_OT_wheel_load_default_tools(Operator):
     bl_idname = "sculpt.wheel_load_default_tools"
     bl_label = "Sculpt Wheel: Load Default Tools"
@@ -126,4 +156,36 @@ class SCULPT_OT_wheel_load_default_tools(Operator):
         if not ts:
             return {'CANCELLED'}
         ts.load_default_tools()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_create_default_toolset(Operator):
+    bl_idname = "sculpt.wheel_create_default_toolset"
+    bl_label = "Sculpt Wheel: Initialize Default Toolset"
+    bl_description = "Initialize Default Toolset"
+
+    def execute(self, context):
+        ts = context.scene.sculpt_wheel.add_toolset("Default")
+        if not ts:
+            return {'CANCELLED'}
+        ts.load_default_tools()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_init_toolsets(Operator):
+    bl_idname = "sculpt.wheel_init_toolsets"
+    bl_label = "Sculpt Wheel: Initialize Toolsets"
+    bl_description = "Initialize Toolsets (global if available)"
+
+    def execute(self, context):
+        from ..spw_io import check_global_sculpt_toolsets, load_global_sculpt_toolsets
+        if context.scene.sculpt_wheel.global_toolset_count() == 0 and check_global_sculpt_toolsets() > 0:
+            load_global_sculpt_toolsets(context)
+            if context.scene.sculpt_wheel.get_active_toolset() is not None:
+                return {'FINISHED'}
+            else:
+                # Something failed!
+                pass
+        import bpy
+        bpy.ops.sculpt.wheel_create_default_toolset()
         return {'FINISHED'}

@@ -73,6 +73,7 @@ class UserData(Enum):
     EXPORT_SCULPT_DIR           = join(user_data, 'export', 'sculpt')
     EXPORT_SCULPT_TOOLSETS_DIR  = join(user_data, 'export', 'sculpt', 'toolsets')
     EXPORT_SCULPT_BUTTONS_DIR   = join(user_data, 'export', 'sculpt', 'buttons')
+    EXPORT_SCULPT_BUTTON_ICONS_DIR = join(user_data, 'export', 'sculpt', 'buttons', 'icons')
 
     ''' Global data paths. '''
     GLOB_DIR                    = join(user_data, 'shared')

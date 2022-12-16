@@ -62,6 +62,39 @@ class Shader3D(Enum):
     def __call__(self):
         return self.value
 
+class BuiltinShaderName(Enum):
+    IMAGE   = 'IMAGE'
+    UNIFORM = 'UNIFORM_COLOR'
+    FLAT    = 'FLAT_COLOR'
+    SMOOTH  = 'SMOOTH_COLOR'
+
+    def __call__(self):
+        return self.value
+
+builtin_shader_image         = from_builtin(BuiltinShaderName.IMAGE())
+builtin_shader_color_unif    = from_builtin(BuiltinShaderName.UNIFORM())
+builtin_shader_color_flat    = from_builtin(BuiltinShaderName.FLAT())
+builtin_shader_color_smooth  = from_builtin(BuiltinShaderName.SMOOTH())
+
+class BuiltinShader(Enum):
+    IMAGE   = builtin_shader_image
+    UNIFORM = builtin_shader_color_unif
+    FLAT    = builtin_shader_color_flat
+    SMOOTH  = builtin_shader_color_smooth
+
+    def __call__(self):
+        return self.value
+
+
+class Shader2D(Enum):
+    IMAGE   = shader_2d_image
+    UNIFORM = shader_2d_color_unif
+    FLAT    = shader_2d_color_flat
+    SMOOTH  = shader_2d_color_smooth
+
+    def __call__(self):
+        return self.value
+
 class ShaderType(Enum):
     POINTS      = "POINTS"
     LINES       = "LINES"

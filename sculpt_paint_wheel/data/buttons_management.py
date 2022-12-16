@@ -51,7 +51,7 @@ class ButtonsManagement():
         if n >= 10:
             return
         b = self.custom_buttons.add()
-        b.id = data['id']
+        #b.id = data['id']
         b.name = data['name']
         b.type = data['type']
         b.as_attribute = data['as_attribute']

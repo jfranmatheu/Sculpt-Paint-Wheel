@@ -47,14 +47,16 @@ class SculptWheel_ActiveToolset_Options(Panel):
             #box.prop(toolset, 'global_overwrite', text="Overwrite brushes on (re)load")
             #box.operator('io.export_active_toolset', text="Reload (import changes)", icon='FILE_REFRESH')
 
-        ## box = self.layout.box()
-        ## box.operator('io.export_active_toolset', text="Export as Library", icon='EXPORT')
+        box = self.layout.box()
+        box.operator('sculpt.wheel_export_active_toolset', text="Export as Library", icon='EXPORT')
+        #box.operator('io.export_active_toolset', text="Export as Library", icon='EXPORT')
 
         box = self.layout.box()
         box.alert = True
         box.label(text="Danger Zone", icon='ERROR')
         row = box.row(align=False)
-        ## row.operator('sculpt.wheel_load_default_tools', text="Reset", icon='FILE_REFRESH')
+        if toolset.use_defaults and not toolset.use_global:
+            row.operator('sculpt.wheel_load_default_tools', text="Reset Default", icon='FILE_REFRESH')
         if toolset.use_global:
             col = box.column(align=True)
             col.operator('sculpt.wheel_remove_active_toolset', text="Remove Locally", icon='TRASH').remove_globally = False
@@ -81,12 +83,14 @@ class SculptWheel_Toolsets_GeneralOptions(Panel):
         box = col.box()
         box.label(text="Toolset Management", icon='ASSET_MANAGER')
         box = col.box()
-        box.operator('io.reload_global_toolsets', text="Load / Reload GLOBAL Toolsets", icon='FILE_REFRESH')
+        box.operator('io.reload_global_toolsets', text="Reload GLOBAL Toolsets", icon='FILE_REFRESH')
 
         col = layout.column(align=True)
         box = col.box()
         box.label(text="Toolset Library - Import/Export", icon='OUTPUT')
         box = col.box()
-        box.operator('io.export_active_toolset', text="Export ACTIVE Toolset", icon='EXPORT')
-        box.operator('io.export_all_toolsets', text="Export ALL Toolsets", icon='EXPORT')
-        box.operator('io.import_toolset', text="Import Toolset", icon='IMPORT')
+        #box.operator('io.export_active_toolset', text="Export ACTIVE Toolset", icon='EXPORT')
+        #box.operator('io.export_all_toolsets', text="Export ALL Toolsets", icon='EXPORT')
+        #box.operator('io.import_toolset', text="Import Toolset", icon='IMPORT')
+        box.operator('sculpt.wheel_export_active_toolset', text="Export ACTIVE Toolset as Library", icon='EXPORT')
+        box.operator('sculpt.wheel_import_toolset', text="Import Library as Toolset", icon='IMPORT')

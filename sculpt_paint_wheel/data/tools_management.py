@@ -8,9 +8,9 @@ class ToolsManagement():
             return None
         return self.toolsets[self.active_toolset]
 
-    def add_toolset(self, name):
+    def add_toolset(self, name, force: bool = False):
         n = len(self.toolsets)
-        if n >= 12:
+        if n >= 12 and not force:
             return
         new_toolset = self.toolsets.add()
         new_toolset.name = name if name != '' else 'Toolset_' + str(n)

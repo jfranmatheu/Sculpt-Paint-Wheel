@@ -620,7 +620,7 @@ class SCULPT_OT_wheel(Operator):
         # Tarta.
         num_pieces = len(self.wheel.custom_buttons)
         if num_pieces == 0:
-            self.wheel.load_custom_buttons()
+            self.wheel.load_custom_buttons(context)
             num = len(self.wheel.custom_buttons)
         else:
             num = min(10, max(4, num_pieces))

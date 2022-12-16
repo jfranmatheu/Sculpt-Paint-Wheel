@@ -1,6 +1,9 @@
+import bpy
 from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty, BoolProperty
 from bpy.path import abspath
+from bpy_extras.io_utils import ExportHelper, ImportHelper
+from sculpt_paint_wheel.file_manager import UserData
 
 
 class SCULPTWHEEL_OT_run_custom_op(Operator):
@@ -188,4 +191,114 @@ class SCULPT_OT_wheel_init_toolsets(Operator):
                 pass
         import bpy
         bpy.ops.sculpt.wheel_create_default_toolset()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_export_active_toolset(Operator, ExportHelper):
+    ''' REMAKED! '''
+    bl_label = "Export Active Toolset as Library"
+    bl_idname = "sculpt.wheel_export_active_toolset"
+    bl_description = "Export or update active brush toolset external library"
+
+    #filename : StringProperty(default="Toolset_Config", name="Filename")
+    #export_all : BoolProperty(default=True, name="Export ALL Toolset brushes")
+    #overwrite : BoolProperty(default=True, name="Overwrite if exist")
+    use_fake_user : BoolProperty(default=True, name="Mark all as fake user")
+
+    filename_ext: str = ".blend"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'SCULPT'
+
+    def invoke(self, context, event):
+        ts = context.scene.sculpt_wheel.get_active_toolset()
+        if not ts:
+            return {'CANCELLED'}
+        # self.filename = ts.name
+        # Initialize filepath.
+        filename = ts.name + ".blend"
+        self.filepath = UserData.EXPORT_SCULPT_TOOLSETS_DIR(filename)
+        return super().invoke(context, event)
+        #    return context.window_manager.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        active_toolset = context.scene.sculpt_wheel.get_active_toolset()
+        if not active_toolset:
+            return {'CANCELLED'}
+        data_blocks = set()
+        for tool in active_toolset.tools:
+            if tool.tool is None:
+                continue
+            data_blocks.add(tool.tool)
+            if tool.tool.texture is None:
+                continue
+            data_blocks.add(tool.tool.texture)
+
+        if not data_blocks:
+            return {'CANCELLED'}
+        bpy.data.libraries.write(self.filepath, data_blocks, fake_user=self.use_fake_user)
+        #export_sculpt_toolset_data_to_lib(context, self.filepath, self.overwrite, False, self.mark_all_as_fake_user)
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_import_toolset(Operator, ExportHelper):
+    ''' REMAKED! '''
+    bl_label = "Import Brush Library"
+    bl_idname = "sculpt.wheel_import_toolset"
+    bl_description = "Import Brush Library and create a new toolset with the brushes"
+
+    #filename : StringProperty(default="Toolset_Config", name="Filename")
+    #export_all : BoolProperty(default=True, name="Export ALL Toolset brushes")
+    overwrite : BoolProperty(default=False, name="Overwrite if exist")
+    use_fake_user : BoolProperty(default=False, name="Use fake user")
+
+    filename_ext: str = ".blend"
+    filter_glob: StringProperty(default="*.blend", options={'HIDDEN'})
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'SCULPT'
+
+    def invoke(self, context, event):
+        ts = context.scene.sculpt_wheel.get_active_toolset()
+        if not ts:
+            return {'CANCELLED'}
+        # self.filename = ts.name
+        # Initialize filepath.
+        self.filepath = UserData.EXPORT_SCULPT_TOOLSETS_DIR(ts.name + ".blend")
+        return super().invoke(context, event)
+        #    return context.window_manager.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        lib_filepath: str = self.filepath
+        from ..spw_io import builtin_brush_names, isfile, exists, basename
+        if not lib_filepath or not exists(lib_filepath) or not isfile(lib_filepath) or not lib_filepath.endswith('.blend'):
+            return {'CANCELLED'}
+        filtered_brushes = []
+        with bpy.data.libraries.load(lib_filepath) as (data_from, data_to):
+            filtered_brushes = [b for b in data_from.brushes if b not in builtin_brush_names]
+            data_to.brushes = filtered_brushes
+        '''
+        from ..spw_io import import_sculpt_toolset_data_from_lib
+        brushes = import_sculpt_toolset_data_from_lib(context, self.filepath, overwrite=self.overwrite, mark_fake_user=self.use_fake_user, link=False)
+        if brushes:
+            from os.path import basename
+            filename = basename(self.filepath)
+            ts = context.scene.sculpt_wheel.add_toolset(filename, force=True)
+            for brush_name in brushes:
+                if brush := bpy.data.brushes.get(brush_name, None):
+                    ts.add_tool(brush, is_brush=True)
+        '''
+        if data_to.brushes:
+            if self.overwrite:
+                for brush in filtered_brushes:
+                    if brush.name in bpy.data.brushes:
+                        bpy.data.brushes.remove(brush)
+            filename = basename(lib_filepath)
+            ts = context.scene.sculpt_wheel.add_toolset(filename, force=True)
+            for brush in data_to.brushes:
+                if brush is not None:
+                    ts.add_tool(brush, is_brush=True)
+                    brush.use_fake_user = self.use_fake_user
         return {'FINISHED'}

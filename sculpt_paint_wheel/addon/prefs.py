@@ -1,6 +1,7 @@
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.props import *
 from .. import __package__ as main_package
+from sculpt_paint_wheel.file_manager import UserData
 
 
 def get_prefs(context):
@@ -29,6 +30,8 @@ class ColorPicker(PropertyGroup):
 
 class WheelPreferences(AddonPreferences):
     bl_idname = main_package
+
+    brush_lib_folder: StringProperty(name="Brush Library Directory", default="", subtype='DIR_PATH')
 
     radius: IntProperty(min=128, default=180, max=300)
     show_tool_names: BoolProperty(default=False)

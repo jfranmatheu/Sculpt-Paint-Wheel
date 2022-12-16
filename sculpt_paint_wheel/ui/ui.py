@@ -163,7 +163,7 @@ class SculptWheelToolsets(Panel):
             #layout.operator('sculpt.wheel_add_toolset', text="Create Toolset")
             from ..spw_io import check_global_sculpt_toolsets
             if (global_toolset_count := check_global_sculpt_toolsets()) > 0:
-                layout.label(text="Global toolsets detected ! (" + global_toolset_count + ')')
+                layout.label(text="Global toolsets detected ! (" + str(global_toolset_count) + ')')
                 row = layout.row()
                 row.scale_y = 2.5
                 row.operator('io.reload_global_toolsets', text="Load GLOBAL Toolsets", icon='IMPORT')
@@ -183,9 +183,9 @@ class SculptWheelToolsets(Panel):
         
         toolset_row.popover('SCULPTWHEEL_PT_show_toolset_options', text="", icon='PROPERTIES')
         
-        ##toolset_row.label(text="", icon='BLANK1')
+        toolset_row.label(text="", icon='BLANK1')
         
-        ##toolset_row.popover('SCULPTWHEEL_PT_show_general_toolset_options', text="", icon='COLLAPSEMENU')
+        toolset_row.popover('SCULPTWHEEL_PT_show_general_toolset_options', text="", icon='COLLAPSEMENU')
         
         #main_col.label(text=active_toolset.name)
         main_col.template_list("SCULPTWHEEL_UL_toolset_slots", "", active_toolset, "tools", active_toolset, "active_tool", type='DEFAULT') #, type='GRID', columns=3)

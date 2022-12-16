@@ -28,6 +28,8 @@ def draw_callback_px(op, ctx, o):
     if ctx.area != op.ctx_area:
         return
 
+    SetBlend()
+
     # Vars.
     tool_rad = op.tool_rad
     half_tool_rad = tool_rad / 2.0
@@ -68,7 +70,6 @@ def draw_callback_px(op, ctx, o):
     #glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex)
     #glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex)
     # RstColorSpace()
-    SetBlend()
 
     Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
 

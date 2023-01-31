@@ -731,8 +731,8 @@ if __main__ == 'sculpt_paint_wheel':
             [x + w, y + h]
         ]
 
-    def get_cir_geom(*args):
-        return {"p": [args[0]]}
+    def get_cir_geom(p):
+      return {"p": [p]}
 
     class ShaderGeom(Enum):
         IMG = get_img_geom

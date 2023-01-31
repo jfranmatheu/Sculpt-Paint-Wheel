@@ -442,9 +442,8 @@ class SCULPT_OT_wheel(Operator):
                 continue
             if t.tool is None:
                 invalid_tools.append(idx)
-        if invalid_tools:
-            for tool in invalid_tools:
-                self.active_toolset.remove_tool(tool)
+        for tool in invalid_tools:
+            self.active_toolset.remove_tool(tool)
 
 
         self.num_tools = max(7, len(self.active_toolset.tools))
@@ -554,6 +553,8 @@ class SCULPT_OT_wheel(Operator):
         from bpy.path import abspath as b3d_abspath
         for i, t in enumerate(self.active_toolset.tools):
             if t:
+                if t.tool is None:
+                    continue
                 if t.idname:
                     if t.idname == active_tool:
                         self.active_tool_pos = self.tool_pos[i]

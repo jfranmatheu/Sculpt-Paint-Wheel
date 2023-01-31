@@ -1,4 +1,7 @@
 from gpu.state import *
+from sys import platform
+
+is_mac = platform == 'darwin'
 
 __all__ = [
 'GetActiveFrameBuffer',
@@ -45,10 +48,20 @@ def SetDepthAlways():SetDepth('ALWAYS')
 def SetDepthNone():SetDepth('NONE')
 def RstDepth():depth_mask_set(False)
 
-def SetUseProgramPointSize(ps):program_point_size_set(True)
-def RstUseProgramPointSize(ps):program_point_size_set(False)
-def SetPoint(ps):point_size_set(ps)
-def RstPoint():point_size_set(1.0)
+def SetUseProgramPointSize():program_point_size_set(True)
+def RstUseProgramPointSize():program_point_size_set(False)
+
+if is_mac:
+    def SetPoint(s,ps,is_bind:bool=True):
+        if not is_bind:
+            s.bind()
+        SetUseProgramPointSize()
+        s.uniform_float('size',ps*2)
+    def RstPoint():RstUseProgramPointSize()
+else:
+    def SetPoint(s,ps,is_bind:bool=True):point_size_set(ps*2)
+    def RstPoint():point_size_set(1.0)
+
 def SetPointBlend(ps):SetBlend();SetPoint(ps)
 def RstPointBlend():RstBlend();RstPoint()
 

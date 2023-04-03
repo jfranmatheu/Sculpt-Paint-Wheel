@@ -6,7 +6,7 @@ from math import pi, radians
 from mathutils import Vector
 from .. gpu.text import Draw_Text, Draw_Text_AlignCenter, Draw_Text_Right, SetFontSize, GetFontDim
 
-from .. gpu.gl_fun import SetLineSBlend as _SetLineSBlend, RstLineSBlend as _RstLineSBlend
+from .. gpu.state import SetLineSBlend as _SetLineSBlend, RstLineSBlend as _RstLineSBlend
 
 PI_4 = pi / 4
 PI5_4 = 5 * pi / 4

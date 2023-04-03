@@ -4,7 +4,6 @@ _A='co'
 _I='image'
 from gpu_extras.presets import *
 from gpu_extras.batch import batch_for_shader as bat
-from bgl import *
 from .gpu_shaders import ShaderType as SType,Shader2D,SH,Shader3D,ShaderGeom as SGeom
 from . state import *
 

@@ -352,6 +352,8 @@ def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bo
         if export_combined:
             for toolset in toolsets:
                 for tool in toolset.tools:
+                    if tool.tool is None:
+                        continue
                     data_blocks.add(tool.tool)
                     # This not neccessary but to mark as fake users it is...
                     if mark_fake_user:
@@ -371,6 +373,8 @@ def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bo
         if not active_toolset:
             return False
         for tool in active_toolset.tools:
+            if tool.tool is None:
+                continue
             data_blocks.add(tool.tool)
             # This not neccessary but to mark as fake users it is...
             if mark_fake_user:
@@ -396,7 +400,10 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
         if not exists(lib_filepath) or not isfile(lib_filepath):
             print("[SCULPTWHEEL] ERROR: Toolset-LIB no found <%s>" % lib_filepath)
             return False
-    
+
+    sculpt_wheel = context.scene.sculpt_wheel
+    toolset = sculpt_wheel.add_toolset(basename(lib_name))
+
     # Append every brush.
     if overwrite:
         has_brush = context.tool_settings.sculpt.brush is not None
@@ -423,9 +430,9 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
                 data_to.brushes = data_from.brushes
 
         if has_brush:# or not context.tool_settings.sculpt.brush:
-            if bpy.data.brushes.get(b_name, None):
-                bpy.context.tool_settings.sculpt.brush = bpy.data.brushes[b_name]
-            
+            if br := bpy.data.brushes.get(b_name, None):
+                context.tool_settings.sculpt.brush = br
+
             '''
             for brush in data_to.brushes:
                 if brush.name == b_name:
@@ -445,6 +452,9 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
             else:
                 data_to.brushes = data_from.brushes
                 #data_to.brushes = [brush for brush in data_from.brushes if brush not in bpy.data.brushes]
+
+    for brush in data_to.brushes:
+        toolset.add_tool(brush, is_brush=True)
 
     return True
 

@@ -6,9 +6,8 @@ from math import pi
 from .. gpu.text import (
     Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim
 )
-from .. gpu.image import Draw_Image
 
-from .. gpu.gl_fun import SetLineSBlend, RstLineSBlend
+from .. gpu.state import SetLineSBlend, RstLineSBlend
 
 
 DEBUG = False

@@ -92,9 +92,9 @@ class IO_OT_import_toolset(Operator):
         name="Toolset Libraries",
         description="Library of toolsets"
     )
-    overwrite : BoolProperty(default=False, name="Overwrite brushes")
-    mark_all_as_fake_user : BoolProperty(default=True, name="Mark all as fake user")
-    
+    overwrite : BoolProperty(default=False, name="Overwrite brushes", options={'HIDDEN'})
+    mark_all_as_fake_user : BoolProperty(default=False, name="Mark all as fake user", options={'HIDDEN'})
+
     @classmethod
     def poll(cls, context):
         return context.mode in modes_with_custom_toolsets

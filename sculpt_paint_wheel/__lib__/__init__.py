@@ -322,7 +322,68 @@ if __main__ == 'sculpt_paint_wheel':
     fragColor = vec4(co, (1-r)*.9   ); // apply alpha: (1-r) or r
   }
   """
+    RNGBLRANG_FS = """
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  out vec4 fragColor;
 
+  float PI = 3.14159265359;
+
+  uniform vec4 co;
+  uniform float t;
+  uniform float f;
+  uniform float ang1;
+  uniform float ang2;
+
+  float roundedFrame (float d, float _thickness)
+  {
+    return smoothstep(0.55, 0.45, abs(d / _thickness) * 5.0);
+  }
+
+  void main()
+  {
+    float r = 0.0;
+    vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+    r = dot(cxy, cxy);
+
+    float s = roundedFrame(r, 9.5);
+    if (s < 0.05)
+      discard; 
+
+    // Use polar coordinates instead of cartesian
+    vec2 toCenter = vec2(0.5)-gl_PointCoord.xy;
+    float radius = length(toCenter)*2.0;
+    float alpha = 1.0;
+
+    float outter = 1.0;
+    float rad = outter - t;
+    float inner = rad - t;
+    if (radius < inner)
+      discard;
+
+    float angle = atan(toCenter.y, -toCenter.x);
+    angle = angle * 180 / PI;
+    //if (angle < 0)
+    //  angle = 360 - angle;
+
+    if (angle > ang1 && angle < ang2)
+      discard;
+
+    if (radius > rad){
+      alpha = smoothstep(outter, rad-f, radius);
+    }
+    else{
+      alpha = smoothstep(inner, rad+f, radius);
+    }
+
+    fragColor = co;
+    fragColor.a = alpha;
+    fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
+
+    // fragColor.rgb = mix(co.rgb, vec3(0.0, 0.0, 1.0), angle/360.0);
+  }
+  """
     RNGBLR_FS = """
   #ifdef GL_ES
   precision mediump float;
@@ -622,6 +683,7 @@ if __main__ == 'sculpt_paint_wheel':
     # RINGS
     # SHCx524E4753 = (CF_VS, RNGS_FS)
 
+    SHCx524E47424C521197 = (CF_VS, RNGBLRANG_FS)
     SHCx524E47424C52 = (CF_VS, RNGBLR_FS)
     SHCx524E47535F53504C4954414E47 = (CF_VS, RNGS_SPLITANG_FS)
     SHCx524E47424C5218103 = (CF_VS, RNGBLRSLC_FS)
@@ -669,8 +731,8 @@ if __main__ == 'sculpt_paint_wheel':
             [x + w, y + h]
         ]
 
-    def get_cir_geom(*args):
-        return {"p": [args[0]]}
+    def get_cir_geom(p):
+      return {"p": [p]}
 
     class ShaderGeom(Enum):
         IMG = get_img_geom

@@ -2,7 +2,7 @@ import bpy
 from .. gpu.dibuix import *
 import colorsys
 from .. utils.fun import get_point_in_circle_from_angle, smoothstep, Vector, direction_from_to, distance_between
-from math import pi
+from math import pi, radians
 from .. gpu.text import (
     Draw_Text, Draw_Text_AlignCenter, SetFontSize, GetFontDim, SetFontWW, RstFontWW
 )
@@ -27,6 +27,8 @@ def draw_callback_px(op, ctx, o):
     if ctx.area != op.ctx_area:
         return
 
+    SetBlend()
+
     # Vars.
     tool_rad = op.tool_rad
     half_tool_rad = tool_rad / 2.0
@@ -41,6 +43,23 @@ def draw_callback_px(op, ctx, o):
 
     # Relleno del circulo grande.
     DiCFS(o, op.rad, op.theme.base_color)
+
+    if op.use_two_tool_circles and not op.gestual:
+        # DiCFS(o, op.toolcircle_rad[1], op.theme.base_color)
+        outer_tool_cir_rad_per_item = 360 / op.tool_circle_counts[0]
+        inner_tool_cir_rad_per_item = 360 / op.tool_circle_counts[1]
+        DiRNGBLRANG(o, op.toolcircle_rad[0], .012, .01, (.18, .18, .18, .12),
+            _ang1=90,
+            _ang2=outer_tool_cir_rad_per_item+90)
+        DiRNGBLRANG(o, op.toolcircle_rad[1], .02, .01, (.18, .18, .18, .12),
+            _ang1=90,
+            _ang2=inner_tool_cir_rad_per_item+90)
+        DiL(
+            op.tool_pos[op.tool_circle_counts[0]-1],
+            op.tool_pos[op.tool_circle_counts[0]],
+            (.24, .24, .24, .14),
+            2.6
+        )
     #DiIMGAMMA((0,0), (1,1), 0)
     #DiIMGAMMA_OP((0,0), (1,1), 0.0, 0)
     #DiIMGAMMA((0,0), (1,1), 0)
@@ -50,7 +69,6 @@ def draw_callback_px(op, ctx, o):
     #glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex)
     #glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex)
     # RstColorSpace()
-    SetBlend()
 
     Draw_Text(*o, '.', 1, 0, *(.9, .9, .9, .9), False)
 
@@ -232,17 +250,41 @@ def draw_callback_px(op, ctx, o):
             if text:
                 if space:
                     SetFontSize(0, text_size, 72)
-                    split = text.split(' ')
-                    w, h = GetFontDim(0, 'X')
-                    half_rad = int(op.gestual_pad_rad / 2)
-                    y = o[1] + half_rad - h
-                    if len(split) > 3:
-                        y += h
-                    h *= 1.75
+                    _split = text.split(' ')
+                    if len(_split) > 1:
+                        line_idx = 0
+                        line_spaces = 0
+                        split = [_split[0]]
+                        prev_length = len(_split[0])
+                        for i in range(1, len(_split)):
+                            curr_length = len(_split[i])
+                            combined_length = curr_length + prev_length
+
+                            if (combined_length + line_spaces) < 12: # count space between so not equal
+                                split[line_idx] = split[line_idx] + ' ' + _split[i]
+                                prev_length = combined_length
+                                line_spaces += 1
+                            else:
+                                line_idx += 1
+                                prev_length = curr_length
+                                line_spaces = 0
+                                split.append(_split[i])
+                    else:
+                        split = _split
+
+                    lines = len(split)
+                    line_spacing = op.gestual_pad_rad * .2
+                    line_height = GetFontDim(0, 'X')[1]
+                    height = lines * line_height + line_spacing * (lines-1) # + op.gestual_pad_rad * .2 * (lines - 1)
+                    #half_rad = int(op.gestual_pad_rad / 2)
+                    y = o[1] + height *.5 #- op.gestual_pad_rad * .2 # half_rad - h
+                    #if len(split) > 3:
+                    #    y += h
+                    #h *= 1.75
                     for txt in split:
                         Draw_Text_AlignCenter(
                             o[0], y, txt, text_size, (.9, .9, .9, .9), False)
-                        y -= h
+                        y -= (line_height + line_spacing)
                 else:
                     Draw_Text_AlignCenter(
                         o[0], o[1], text, text_size, (.9, .9, .9, .9), False)
@@ -275,9 +317,12 @@ def draw_callback_px(op, ctx, o):
         # Iconos de Herramientas.
         a_idx = op.active_tool_index
         n = num_icons
+
         for i, p in enumerate(op.tool_pos):
             if n == 0:
                 break
+            if op.icons[i] is None:
+                continue
             if i == a_idx:
                 DiIMGA_Intensify(
                     (p[0] - dec_tool_rad, p[1] - dec_tool_rad),

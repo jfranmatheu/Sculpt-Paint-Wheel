@@ -86,6 +86,7 @@ class SCULPT_OT_wheel_remove_custom_button(Operator):
         context.scene.sculpt_wheel.remove_custom_button(self.index)
         return {'FINISHED'}
 
+
 class SCULPT_OT_wheel_load_default_custom_buttons(Operator):
     bl_idname = "sculpt.wheel_load_default_custom_buttons"
     bl_label = "Sculpt Wheel: Load Default Custom Buttons"
@@ -94,4 +95,30 @@ class SCULPT_OT_wheel_load_default_custom_buttons(Operator):
     def execute(self, context):
         context.scene.sculpt_wheel.remove_all_custom_buttons()
         context.scene.sculpt_wheel.load_default_custom_buttons()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_load_custom_buttons(Operator):
+    bl_idname = "sculpt.wheel_load_custom_buttons"
+    bl_label = "Sculpt Wheel: Load Custom Buttons"
+    bl_description = "Load/Reset SculptWheel Custom Buttons"
+
+    def execute(self, context):
+        from ..spw_io import check_sculpt_custom_buttons, load_custom_buttons
+        if check_sculpt_custom_buttons():
+            load_custom_buttons(context)
+        else:
+            import bpy
+            bpy.ops.sculpt.wheel_load_default_custom_buttons()
+        return {'FINISHED'}
+
+
+class SCULPT_OT_wheel_save_custom_buttons(Operator):
+    bl_idname = "sculpt.wheel_save_custom_buttons"
+    bl_label = "Sculpt Wheel: Save Custom Buttons"
+    bl_description = "Save SculptWheel Custom Buttons"
+
+    def execute(self, context):
+        from ..spw_io import save_custom_buttons
+        save_custom_buttons(context)
         return {'FINISHED'}

@@ -1,9 +1,13 @@
+import uuid
+
+
 class ButtonsManagement():
     def add_custom_button(self, data):
         n = len(self.custom_buttons)
         if n >= 10:
             return
         b = self.custom_buttons.add()
+        b.id = uuid.uuid4().hex
         b.name = data.name
         b.type = data.type
         b.as_attribute = data.as_attribute
@@ -33,6 +37,7 @@ class ButtonsManagement():
                 print("OPS! Toggles are not supported yet but one was created!")
         #print(b.attr)
         if data.image_path.startswith('//'):
+            from os.path import abspath
             b.image_path = abspath(data.image_path)
         else:
             b.image_path = data.image_path
@@ -46,6 +51,7 @@ class ButtonsManagement():
         if n >= 10:
             return
         b = self.custom_buttons.add()
+        #b.id = data['id']
         b.name = data['name']
         b.type = data['type']
         b.as_attribute = data['as_attribute']

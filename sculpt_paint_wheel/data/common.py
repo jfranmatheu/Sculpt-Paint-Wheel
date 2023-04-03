@@ -66,13 +66,13 @@ def update_global(self, context):
     if self.prevent_update:
         return
     if self.use_global:
-        from ..io import add_sculpt_toolset_to_globals
+        from ..spw_io import add_sculpt_toolset_to_globals
         add_sculpt_toolset_to_globals(context, self)
         for tool in self.tools:
             if tool.tool:
                 tool.tool.use_fake_user = False
     else:
-        from ..io import remove_sculpt_toolset_from_globals
+        from ..spw_io import remove_sculpt_toolset_from_globals
         remove_sculpt_toolset_from_globals(context, self)
         for tool in self.tools:
             if tool.tool:
@@ -81,7 +81,7 @@ def update_global(self, context):
 def update_toolset_name(self, context):
     if self.prevent_update or not self.use_global:
         return
-    from ..io import update_global_sculpt_toolset_name
+    from ..spw_io import update_global_sculpt_toolset_name
     update_global_sculpt_toolset_name(context, self)
 
 
@@ -99,15 +99,37 @@ class WheelToolset(PropertyGroup):
 
     prevent_update : BoolProperty(default=True)
     export_on_save : BoolProperty(default=False, description="Save toolset data when saving .blend file (Ctrl+S)")
+    use_defaults : BoolProperty(default=False)
     #global_overwrite : BoolProperty(default=False, description="Global brushes will over-write blendfile brushes that match the name")
 
-    def load_default_tools(self):
+    def load_default_tools(self, copy: bool = True):
         from bpy import data as D
         from . sculpt.defaults import def_tools
+        from ..spw_io import builtin_brush_names
+        if self.use_defaults:
+            for tool in self.tools:
+                if tool.tool and tool.tool.name not in builtin_brush_names and 'default' in tool.tool:
+                    D.brushes.remove(tool.tool)
+        self.tools.clear()
         for data in def_tools:
-            tool = self.add_tool(D.brushes.get(data[0], None))
+            br = D.brushes.get(data[0], None)
+            if br is None:
+                continue
+            if copy:
+                new_br = br.copy()
+                new_name = 'SW | ' + br.name
+                new_br.name = new_name
+                while new_br.name != new_name:
+                    D.brushes.remove(D.brushes.get(new_name))
+                    new_br.name = new_name
+            else:
+                new_br = br
+            new_br['default'] = 1
+            tool = self.add_tool(new_br, is_brush=True)
             if tool and data[1]:
-                tool.name = data[1]
+                # tool.name = data[1]
+                tool.name = new_br.name
+        self.use_defaults = True
 
     def add_tool(self, tool, is_brush=True):
         order = (len(self.tools) - 1)
@@ -273,6 +295,7 @@ class CreateCustomButton(PropertyGroup):
 
 
 class WheelCustomButton(CreateCustomButton, PropertyGroup):
+    id: StringProperty(default="", options={'HIDDEN'})
     name : StringProperty(default="Button", name="Name")
     attr : StringProperty(default="", name="Attribute")
     type : EnumProperty(

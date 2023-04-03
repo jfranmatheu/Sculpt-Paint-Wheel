@@ -12,6 +12,8 @@ def SetFontRot(id,a):enable(id,ROTATION);rotation(id,a)
 def RstFontRot(id):disable(id,ROTATION)
 def SetFontSize(id,_size,_dpi):size(id,_size,_dpi)
 
+from .state import RstBlend, SetBlend
+
 from blf import (
     enable as text_enable, disable as text_disable,
     SHADOW, shadow as text_shadow, shadow_offset as text_shadow_offset,
@@ -20,6 +22,7 @@ from blf import (
 )
 
 def Draw_Text(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, _a = 1, _use_shadow = False):
+    RstBlend()
     if _use_shadow:
         _font_id = 1
         text_enable(_font_id, SHADOW)
@@ -31,8 +34,10 @@ def Draw_Text(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, _a = 1
     text_draw(_font_id, _text)
     if _use_shadow:
         text_disable(_font_id, SHADOW)
-        
+    SetBlend()
+
 def Draw_Text_Right(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, _a = 1, _use_shadow = False):
+    RstBlend()
     if _use_shadow:
         _font_id = 1
         text_enable(_font_id, SHADOW)
@@ -45,8 +50,10 @@ def Draw_Text_Right(_x, _y, _text, _size, _font_id = 0, _r = 1, _g = 1, _b = 1, 
     text_draw(_font_id, _text)
     if _use_shadow:
         text_disable(_font_id, SHADOW)
+    SetBlend()
 
 def Draw_Text_AlignCenter(_x=0, _y=0, _text='', _text_size=12, _text_color=(1, 1, 1, 1), _use_shadow=True,  _font_id = 0):
+    RstBlend()
     if _use_shadow:
         _font_id = 1
         text_enable(_font_id, SHADOW)
@@ -59,3 +66,4 @@ def Draw_Text_AlignCenter(_x=0, _y=0, _text='', _text_size=12, _text_color=(1, 1
     text_draw(_font_id, _text)
     if _use_shadow:
         text_disable(_font_id, SHADOW)
+    SetBlend()

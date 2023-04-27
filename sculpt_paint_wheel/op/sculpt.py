@@ -9,6 +9,7 @@ from .. utils import * #CursorIcon, Cursor, Anim, Ease, rotate_point_around_poin
 from .. addon.prefs import get_prefs
 from math import radians
 from gpu.texture import from_image as gpu_texture_from_image
+from sculpt_paint_wheel.props import Props
 
 brush_idname_exceptions = {'MULTIPLANE_SCRAPE', 'TOPOLOGY'}
 
@@ -388,6 +389,7 @@ class SCULPT_OT_wheel(Operator):
         return False
 
     def invoke(self, context, event):
+        sculpt_wheel = Props.SculptWheelData(context)
         self.active_tool_pos = None
         self.on_hover_tool_index = -1
         active_tool = context.tool_settings.sculpt.brush
@@ -414,7 +416,7 @@ class SCULPT_OT_wheel(Operator):
             self.prev_brush_strength = self.get_brush_strength()
 
         self.prefs = get_prefs(context)
-        self.wheel = context.scene.sculpt_wheel
+        self.wheel = sculpt_wheel
         self.can_close = not self.prefs.keep_open
         self.active_toolset = self.wheel.get_active_toolset()
         self.theme = self.prefs.theme

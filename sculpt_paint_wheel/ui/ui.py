@@ -4,6 +4,8 @@ from .. addon.prefs import WheelPreferences, get_prefs
 from bpy.props import *
 from .. icons import Icon
 
+from sculpt_paint_wheel.props import Props
+
 '''
 class SculptWheelBasePanel(Panel):
     bl_space_type = "VIEW_3D"
@@ -155,8 +157,8 @@ class SculptWheelToolsets(Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
-        wheel_data = scn.sculpt_wheel
+        
+        wheel_data = Props.SculptWheelData(context)
 
         if wheel_data.active_toolset == -1 or (active_toolset := wheel_data.get_active_toolset()) is None:
             #layout.label(text="Create a toolset to start:")
@@ -211,7 +213,7 @@ class SculptWheelCustomButtons(Panel):
         scn = context.scene
         layout = self.layout
 
-        wheel_data = scn.sculpt_wheel
+        wheel_data = Props.SculptWheelData(context)
         create = wheel_data.create_custom_button
         buttons = wheel_data.custom_buttons
 

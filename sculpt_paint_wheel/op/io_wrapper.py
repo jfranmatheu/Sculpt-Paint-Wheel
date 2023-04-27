@@ -16,6 +16,8 @@ modes_with_custom_toolsets = {'SCULPT'}
 from os.path import dirname, abspath, join, exists, isfile, basename
 from glob import glob
 
+from sculpt_paint_wheel.props import Props
+
 
 class IO_OT_export_active_toolset(Operator):
     bl_label = "Export Active Toolset"
@@ -32,7 +34,8 @@ class IO_OT_export_active_toolset(Operator):
         return context.mode in modes_with_custom_toolsets
     
     def invoke(self, context, event):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts:
             return {'CANCELLED'}
         self.filename = ts.name
@@ -126,7 +129,8 @@ class IO_OT_reload_active_global_toolset(Operator):
     
     @classmethod
     def poll(cls, context):
-        active = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        active = sculpt_wheel.get_active_toolset()
         return active and active.use_global
 
     def execute(self, context):
@@ -141,7 +145,8 @@ class IO_OT_save_active_global_toolset(Operator):
     
     @classmethod
     def poll(cls, context):
-        active = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        active = sculpt_wheel.get_active_toolset()
         return active and active.use_global
 
     def execute(self, context):

@@ -5,6 +5,8 @@ from bpy.path import abspath
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 from sculpt_paint_wheel.file_manager import UserData
 
+from sculpt_paint_wheel.props import Props
+
 
 class SCULPTWHEEL_OT_run_custom_op(Operator):
     bl_idname = "sculptwheel.run_custom_op"
@@ -25,7 +27,8 @@ class SCULPT_OT_wheel_add_toolset(Operator):
     name : StringProperty(name="Toolset Name", default="")
 
     def execute(self, context):
-        context.scene.sculpt_wheel.add_toolset(self.name)
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.add_toolset(self.name)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_add_tool(Operator):
@@ -36,13 +39,15 @@ class SCULPT_OT_wheel_add_tool(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'SCULPT' and context.scene.sculpt_wheel.active_toolset != -1
+        sculpt_wheel = Props.SculptWheelData(context)
+        return context.mode == 'SCULPT' and sculpt_wheel.active_toolset != -1
 
     def execute(self, context):
         from bpy import data as D
         brush = D.brushes.get(self.tool, None)
         if brush:
-            context.scene.sculpt_wheel.get_active_toolset().add_tool(brush)
+            sculpt_wheel = Props.SculptWheelData(context)
+            sculpt_wheel.get_active_toolset().add_tool(brush)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_add_active_tool(Operator):
@@ -52,19 +57,21 @@ class SCULPT_OT_wheel_add_active_tool(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'SCULPT' and context.scene.sculpt_wheel.active_toolset != -1
+        sculpt_wheel = Props.SculptWheelData(context)
+        return context.mode == 'SCULPT' and culpt_wheel.active_toolset != -1
 
     def execute(self, context):
         # Add non-brush tool.
+        sculpt_wheel = Props.SculptWheelData(context)
         from bl_ui.properties_paint_common import UnifiedPaintPanel
         if not UnifiedPaintPanel.paint_settings(context):
-            context.scene.sculpt_wheel.get_active_toolset().add_tool(context.workspace.tools.from_space_view3d_mode('SCULPT').idname, False)
+            sculpt_wheel.get_active_toolset().add_tool(context.workspace.tools.from_space_view3d_mode('SCULPT').idname, False)
             return {'FINISHED'}
         # Add brush tool.
         brush = context.tool_settings.sculpt.brush
         if not brush:
             return {'CANCELLED'}
-        context.scene.sculpt_wheel.get_active_toolset().add_tool(brush)
+        sculpt_wheel.get_active_toolset().add_tool(brush)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_remove_toolset(Operator):
@@ -74,7 +81,8 @@ class SCULPT_OT_wheel_remove_toolset(Operator):
     name : StringProperty(name="Toolset Name", default="")
 
     def execute(self, context):
-        context.scene.sculpt_wheel.remove_toolset(self.name)
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.remove_toolset(self.name)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_remove_active_toolset(Operator):
@@ -85,7 +93,8 @@ class SCULPT_OT_wheel_remove_active_toolset(Operator):
     remove_globally : BoolProperty(name="Remove Globally", default=True)
 
     def execute(self, context):
-        context.scene.sculpt_wheel.remove_toolset(context.scene.sculpt_wheel.active_toolset, self.remove_globally)
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.remove_toolset(sculpt_wheel.active_toolset, self.remove_globally)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_remove_tool(Operator):
@@ -98,13 +107,15 @@ class SCULPT_OT_wheel_remove_tool(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'SCULPT' and context.scene.sculpt_wheel.active_toolset != -1
+        sculpt_wheel = Props.SculptWheelData(context)
+        return context.mode == 'SCULPT' and sculpt_wheel.active_toolset != -1
 
     def execute(self, context):
+        sculpt_wheel = Props.SculptWheelData(context)
         if self.index != -1:
-            context.scene.sculpt_wheel.get_active_toolset().remove_tool(self.index)
+            sculpt_wheel.get_active_toolset().remove_tool(self.index)
         elif self.tool:
-            context.scene.sculpt_wheel.get_active_toolset().remove_tool(self.tool)
+            sculpt_wheel.get_active_toolset().remove_tool(self.tool)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_activate_toolset(Operator):
@@ -115,8 +126,9 @@ class SCULPT_OT_wheel_activate_toolset(Operator):
     index : IntProperty(name="Toolset Index", default=0)
 
     def execute(self, context):
-        context.scene.sculpt_wheel.active_toolset = self.index
-        #context.scene.sculpt_wheel.toolset_list = str(len(toolsets))
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.active_toolset = self.index
+        #sculpt_wheel.toolset_list = str(len(toolsets))
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_toolset_mark_as_global(Operator):
@@ -125,7 +137,8 @@ class SCULPT_OT_wheel_toolset_mark_as_global(Operator):
     bl_description = "Mark Active Toolset as Global"
 
     def execute(self, context):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts or ts.use_global:
             return {'CANCELLED'}
         ts.use_global = True
@@ -140,7 +153,8 @@ class SCULPT_OT_wheel_toolset_mark_as_local(Operator):
     bl_description = "Mark Active Toolset as Local"
 
     def execute(self, context):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts or not ts.use_global:
             return {'CANCELLED'}
         ts.use_global = False
@@ -155,7 +169,8 @@ class SCULPT_OT_wheel_load_default_tools(Operator):
     bl_description = "Reset toolset to its defaults"
 
     def execute(self, context):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts:
             return {'CANCELLED'}
         ts.load_default_tools()
@@ -168,7 +183,8 @@ class SCULPT_OT_wheel_create_default_toolset(Operator):
     bl_description = "Initialize Default Toolset"
 
     def execute(self, context):
-        ts = context.scene.sculpt_wheel.add_toolset("Default")
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.add_toolset("Default")
         if not ts:
             return {'CANCELLED'}
         ts.load_default_tools()
@@ -181,10 +197,11 @@ class SCULPT_OT_wheel_init_toolsets(Operator):
     bl_description = "Initialize Toolsets (global if available)"
 
     def execute(self, context):
+        sculpt_wheel = Props.SculptWheelData(context)
         from ..spw_io import check_global_sculpt_toolsets, load_global_sculpt_toolsets
-        if context.scene.sculpt_wheel.global_toolset_count() == 0 and check_global_sculpt_toolsets() > 0:
+        if sculpt_wheel.global_toolset_count() == 0 and check_global_sculpt_toolsets() > 0:
             load_global_sculpt_toolsets(context)
-            if context.scene.sculpt_wheel.get_active_toolset() is not None:
+            if sculpt_wheel.get_active_toolset() is not None:
                 return {'FINISHED'}
             else:
                 # Something failed!
@@ -212,7 +229,8 @@ class SCULPT_OT_wheel_export_active_toolset(Operator, ExportHelper):
         return context.mode == 'SCULPT'
 
     def invoke(self, context, event):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts:
             return {'CANCELLED'}
         # self.filename = ts.name
@@ -223,7 +241,8 @@ class SCULPT_OT_wheel_export_active_toolset(Operator, ExportHelper):
         #    return context.window_manager.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
-        active_toolset = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        active_toolset = sculpt_wheel.get_active_toolset()
         if not active_toolset:
             return {'CANCELLED'}
         data_blocks = set()
@@ -261,7 +280,8 @@ class SCULPT_OT_wheel_import_toolset(Operator, ExportHelper):
         return context.mode == 'SCULPT'
 
     def invoke(self, context, event):
-        ts = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        ts = sculpt_wheel.get_active_toolset()
         if not ts:
             return {'CANCELLED'}
         # self.filename = ts.name
@@ -271,6 +291,7 @@ class SCULPT_OT_wheel_import_toolset(Operator, ExportHelper):
         #    return context.window_manager.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
+        sculpt_wheel = Props.SculptWheelData(context)
         lib_filepath: str = self.filepath
         from ..spw_io import builtin_brush_names, isfile, exists, basename
         if not lib_filepath or not exists(lib_filepath) or not isfile(lib_filepath) or not lib_filepath.endswith('.blend'):
@@ -285,7 +306,7 @@ class SCULPT_OT_wheel_import_toolset(Operator, ExportHelper):
         if brushes:
             from os.path import basename
             filename = basename(self.filepath)
-            ts = context.scene.sculpt_wheel.add_toolset(filename, force=True)
+            ts = sculpt_wheel.add_toolset(filename, force=True)
             for brush_name in brushes:
                 if brush := bpy.data.brushes.get(brush_name, None):
                     ts.add_tool(brush, is_brush=True)
@@ -296,7 +317,7 @@ class SCULPT_OT_wheel_import_toolset(Operator, ExportHelper):
                     if brush.name in bpy.data.brushes:
                         bpy.data.brushes.remove(brush)
             filename = basename(lib_filepath)
-            ts = context.scene.sculpt_wheel.add_toolset(filename, force=True)
+            ts = sculpt_wheel.add_toolset(filename, force=True)
             for brush in data_to.brushes:
                 if brush is not None:
                     ts.add_tool(brush, is_brush=True)

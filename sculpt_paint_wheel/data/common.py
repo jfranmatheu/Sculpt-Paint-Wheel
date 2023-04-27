@@ -5,6 +5,8 @@ from os.path import isfile, join, dirname
 from . sculpt.presets import preset_menus, preset_operators, preset_panels
 import bpy
 
+from sculpt_paint_wheel.props import Props
+
 blender_icons_path = join(dirname(dirname(__file__)), 'images', 'blender', 'tile234.png')
 
 
@@ -33,6 +35,7 @@ class Tool:
 
 class WheelTool(PropertyGroup):
     def update_tool(self, context):
+        sculpt_wheel = Props.SculptWheelData(context)
         if self.tool:
             if not self.tool.use_paint_sculpt:
                 self.tool = self.prev_tool
@@ -42,12 +45,13 @@ class WheelTool(PropertyGroup):
             self.name = self.tool.name
             self.prev_tool = self.tool
         elif self.idname == '':
-            context.scene.sculpt_wheel.get_active_toolset().remove_tool(self.name) # Change to self
+            sculpt_wheel.get_active_toolset().remove_tool(self.name) # Change to self
     
     def update_name(self, context):
+        sculpt_wheel = Props.SculptWheelData(context)
         # name = self.idname.split('.')[1].replace('_', ' ').capitalize()
         if (self.idname != '' and not self.tool) and (not self.name or self.name == ''):
-            context.scene.sculpt_wheel.get_active_toolset().remove_tool(self.name)
+            sculpt_wheel.get_active_toolset().remove_tool(self.name)
 
     name : StringProperty(name="Name", default="Tool", options={'TEXTEDIT_UPDATE'}, update=update_name)
     color : FloatVectorProperty(subtype='COLOR', name="Color", min=0, max=1, size=4, default=(.2, .2, .2, 1))

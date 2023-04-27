@@ -2,6 +2,8 @@ from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty
 from bpy.path import abspath
 
+from sculpt_paint_wheel.props import Props
+
 
 class SCULPT_OT_wheel_add_customm_button(Operator):
     bl_idname = "sculpt.wheel_add_custom_button"
@@ -13,7 +15,8 @@ class SCULPT_OT_wheel_add_customm_button(Operator):
         return context.mode == 'SCULPT'
 
     def execute(self, context):
-        create = context.scene.sculpt_wheel.create_custom_button
+        sculpt_wheel = Props.SculptWheelData(context)
+        create = sculpt_wheel.create_custom_button
         if not create.name or create.name.isspace():
             self.report({'WARNING'}, "Button name is not valid")
             return {'CANCELLED'}
@@ -65,7 +68,7 @@ class SCULPT_OT_wheel_add_customm_button(Operator):
                 return {'CANCELLED'}
                 if not hasattr(context.tool_settings.sculpt.brush, create.custom_identifier):
                     return {'CANCELLED'}
-        context.scene.sculpt_wheel.add_custom_button(create)
+        sculpt_wheel.add_custom_button(create)
         return {'FINISHED'}
 
 
@@ -83,7 +86,8 @@ class SCULPT_OT_wheel_remove_custom_button(Operator):
     def execute(self, context):
         if self.index == -1:
             return {'CANCELLED'}
-        context.scene.sculpt_wheel.remove_custom_button(self.index)
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.remove_custom_button(self.index)
         return {'FINISHED'}
 
 
@@ -93,8 +97,9 @@ class SCULPT_OT_wheel_load_default_custom_buttons(Operator):
     bl_description = "Load Default SculptWheel Custom Buttons"
 
     def execute(self, context):
-        context.scene.sculpt_wheel.remove_all_custom_buttons()
-        context.scene.sculpt_wheel.load_default_custom_buttons()
+        sculpt_wheel = Props.SculptWheelData(context)
+        sculpt_wheel.remove_all_custom_buttons()
+        sculpt_wheel.load_default_custom_buttons()
         return {'FINISHED'}
 
 

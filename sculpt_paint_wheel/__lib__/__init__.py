@@ -38,29 +38,26 @@ if __main__ == 'sculpt_paint_wheel':
   """
 
     # 2nd method.
+    # float roundedFrame(float d, float thickness)
+    # {
+    #   return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
+    # }
     CFS2_FS = """
   uniform vec4 co;
   out vec4 fragColor;
 
-  float roundedFrame (float d, float thickness)
-  {
-    return smoothstep(0.55, 0.45, abs(d / thickness) * 5.0);
-  }
-
   void main()
   {
-    float r = 0.0;
     vec2 cxy = 2.0 * gl_PointCoord - 1.0;
-    r = dot(cxy, cxy);
+    float rad = dot(cxy, cxy);
 
-    float s = roundedFrame(r, 9.5);
-    if (s < 0.05)
+    float alpha = smoothstep(0.55, 0.45, abs(rad / 9.5) * 5.0);
+    if (alpha < 0.05)
       discard;
     fragColor = co;
-    fragColor.a *= s;
-    //fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
+    fragColor.a *= alpha;
   }
-  """
+  """ # pow(fragColor.rgb, vec3(2.2));
 
   # 2nd method.
     CFS2_GAMMA_FS = """

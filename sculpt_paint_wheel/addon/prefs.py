@@ -74,8 +74,6 @@ class WheelPreferences(AddonPreferences):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        #wheel_data = scn.sculpt_wheel
-
         main_row = layout.row(align=False)
 
         left_column = main_row.column(align=False)

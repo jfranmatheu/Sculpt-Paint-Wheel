@@ -1,6 +1,8 @@
 from bpy.types import Panel
 from bl_ui.properties_paint_common import brush_settings
 
+from sculpt_paint_wheel.props import Props
+
 
 class SculptWheelTool_ContextMenu(Panel):
     bl_idname = "SCULPTWHEEL_PT_show_tool_context_menu"
@@ -10,7 +12,8 @@ class SculptWheelTool_ContextMenu(Panel):
     bl_context = "NONE"
 
     def draw(self, context):
-        toolset = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        toolset = sculpt_wheel.get_active_toolset()
         if not toolset:
             return
         tool  = toolset.get_active_tool().tool
@@ -27,7 +30,8 @@ class SculptWheel_ActiveToolset_Options(Panel):
     bl_context = "NONE"
 
     def draw(self, context):
-        toolset = context.scene.sculpt_wheel.get_active_toolset()
+        sculpt_wheel = Props.SculptWheelData(context)
+        toolset = sculpt_wheel.get_active_toolset()
         if not toolset:
             return
 

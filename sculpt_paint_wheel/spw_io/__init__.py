@@ -6,6 +6,8 @@ from ..file_manager import UserData
 import json
 import re
 from .. import bl_info
+
+from sculpt_paint_wheel.props import Props
 '''
 #user_data_dir = join(dirname(dirname(__file__)), 'user_data')
 from .. import gen_config
@@ -101,7 +103,8 @@ def get_tool_list(toolset):
 
 def save_all_global_sculpt_toolsets(context):
     data = {}
-    toolsets = [toolset for toolset in context.scene.sculpt_wheel.toolsets if toolset.export_on_save]
+    sculpt_wheel = Props.SculptWheelData(context)
+    toolsets = [toolset for toolset in sculpt_wheel.toolsets if toolset.export_on_save]
     data_filepath = join(UserData.GLOB_SCULPT_DIR(), "toolsets.json")
     for toolset in toolsets:
         lib_filepath = join(UserData.GLOB_SCULPT_TOOLSETS_DIR(), "%s.blend" % toolset.uuid)
@@ -143,6 +146,8 @@ def check_global_sculpt_toolsets() -> int:
 
 
 def load_global_sculpt_toolsets(context, toolsets=None):
+    sculpt_wheel = Props.SculptWheelData(context)
+
     data_filepath = join(UserData.GLOB_SCULPT_DIR(), "toolsets.json")
     if not exists(data_filepath):
         print("[SCULPTWHEEL] ERROR: Can't load global sculpt toolsets, file %s not found" % data_filepath)
@@ -150,7 +155,6 @@ def load_global_sculpt_toolsets(context, toolsets=None):
     lib_dir = UserData.GLOB_SCULPT_TOOLSETS_DIR()
     from glob import glob
     toolset_libs = glob(join(lib_dir, '*.blend'))
-    sculpt_wheel = context.scene.sculpt_wheel
 
     with open(data_filepath, 'r') as f:
         raw_data = f.read()
@@ -219,10 +223,10 @@ def load_global_sculpt_toolsets(context, toolsets=None):
 
 
 def reload_global_toolsets(context):
+    sculpt_wheel = Props.SculptWheelData(context)
     active_brush_name = context.tool_settings.sculpt.brush.name
 
     # Clear toolsets.
-    sculpt_wheel = context.scene.sculpt_wheel
     # Ensure we loop in reserve so remove by index doesn't break the following removes.
     toolset_idx_reversed = len(sculpt_wheel.toolsets) - 1
     for toolset in reversed(sculpt_wheel.toolsets):
@@ -247,8 +251,9 @@ def reload_global_toolsets(context):
 
 
 def reload_active_global_toolset(context):
+    sculpt_wheel = Props.SculptWheelData(context)
+
     # Clear toolsets.
-    sculpt_wheel = context.scene.sculpt_wheel
     toolset = sculpt_wheel.get_active_toolset()
     if not toolset:
         return False
@@ -266,7 +271,6 @@ def reload_active_global_toolset(context):
         return False
     lib_dir = UserData.GLOB_SCULPT_TOOLSETS_DIR()
     toolset_lib = join(lib_dir, '%s.blend' % toolset_id)
-    sculpt_wheel = context.scene.sculpt_wheel
 
     with open(data_filepath, 'r') as f:
         raw_data = f.read()
@@ -333,14 +337,17 @@ def reload_active_global_toolset(context):
     return True
 
 def save_active_global_toolset(context):
+    sculpt_wheel = Props.SculptWheelData(context)
+
     # Update export active global toolset.
-    sculpt_wheel = context.scene.sculpt_wheel
     toolset = sculpt_wheel.get_active_toolset()
     if not toolset:
         return False
     save_global_sculpt_toolset(context, toolset)
 
 def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bool = True, export_all: bool = False, mark_fake_user: bool = True, export_combined: bool = False, export_type: str = 'ALL'):
+    sculpt_wheel = Props.SculptWheelData(context)
+
     # Get lib path.
     if lib_name and (isfile(lib_name) or isdir(lib_name)) and exists(lib_name):
         ir_dir = isdir(lib_name)
@@ -368,11 +375,11 @@ def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bo
     data_blocks = set()
     if export_all:
         if export_type == 'ALL':
-            toolsets = context.scene.sculpt_wheel.toolsets
+            toolsets = sculpt_wheel.toolsets
         elif export_type == 'GLOBAL':
-            toolsets = [ts for ts in context.scene.sculpt_wheel.toolsets if ts.use_global]
+            toolsets = [ts for ts in sculpt_wheel.toolsets if ts.use_global]
         else:
-            toolsets = [ts for ts in context.scene.sculpt_wheel.toolsets if not ts.use_global]
+            toolsets = [ts for ts in sculpt_wheel.toolsets if not ts.use_global]
         if export_combined:
             for toolset in toolsets:
                 for tool in toolset.tools:
@@ -396,7 +403,7 @@ def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bo
                                                   )
             return True
     else:
-        active_toolset = context.scene.sculpt_wheel.get_active_toolset()
+        active_toolset = sculpt_wheel.get_active_toolset()
         if not active_toolset:
             return False
         for tool in active_toolset.tools:
@@ -412,6 +419,8 @@ def export_sculpt_toolset_data_to_lib(context, lib_name: str = "", overwrite: bo
 
 
 def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: bool = True, mark_fake_user: bool = True, link: bool = False):
+    sculpt_wheel = Props.SculptWheelData(context)
+    
     if not lib_name:
         return False
 
@@ -508,6 +517,7 @@ def write_to_file(data, filepath):
 
 
 def backup_all_addon_data(ctx):
+    sculpt_wheel = Props.SculptWheelData(ctx)
 
     ''' 1. Create folder to store data in. '''
     # Check if 'saved_config' folder exists.
@@ -543,7 +553,7 @@ def backup_all_addon_data(ctx):
     #####################
     data = {}
     data_filepath = join(sculpt_path, "toolsets.json")
-    for toolset in ctx.scene.sculpt_wheel.toolsets:
+    for toolset in sculpt_wheel.toolsets:
         lib_filepath = join(sculpt_path, "toolset_%s.blend" % toolset.name)
         brushes = {tool.tool for tool in toolset.tools if not tool.idname}
         # This not neccessary (adding brushes it gets rid of textures) but to mark as fake users...
@@ -578,7 +588,7 @@ def backup_all_addon_data(ctx):
 
     # Construct dictionary and fill with buttons data.
     data = {}
-    for button in ctx.scene.sculpt_wheel.custom_buttons:
+    for button in sculpt_wheel.custom_buttons:
         b_image_path = button.image_path
         if exists(b_image_path) and isfile(b_image_path):
             # Copy icon to our data folder.
@@ -682,6 +692,8 @@ def backup_all_addon_data(ctx):
 
 
 def save_custom_buttons(ctx):
+    sculpt_wheel = Props.SculptWheelData(ctx)
+
     from os.path import basename
     from shutil import copyfile
     import uuid
@@ -693,7 +705,7 @@ def save_custom_buttons(ctx):
 
     # Construct dictionary and fill with buttons data.
     data = {}
-    for button in ctx.scene.sculpt_wheel.custom_buttons:
+    for button in sculpt_wheel.custom_buttons:
         b_image_path = button.image_path
         if exists(b_image_path) and isfile(b_image_path):
             # Copy icon to our data folder.
@@ -735,12 +747,13 @@ def check_sculpt_custom_buttons() -> bool:
 def load_custom_buttons(ctx):
     if not check_sculpt_custom_buttons():
         return
+    
+    sculpt_wheel = Props.SculptWheelData(ctx)
 
     # Get data path.
     folder = UserData.EXPORT_SCULPT_BUTTONS_DIR()
     data_filepath = join(folder, 'custom_buttons.json')
 
-    sculpt_wheel = ctx.scene.sculpt_wheel
     sculpt_wheel.clear_custom_buttons()
 
     data = read_json_file(data_filepath)

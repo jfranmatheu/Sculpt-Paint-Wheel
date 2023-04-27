@@ -1,5 +1,5 @@
 from gpu.shader import from_builtin#, code_from_builtin # NOTE: Exposes the internal shader code for query.
-from gpu.types import GPUShader as Shader
+from gpu.types import GPUShader
 from enum import Enum
 
 
@@ -104,6 +104,17 @@ class ShaderType(Enum):
 
     def __call__(self):
         return self.value
+
+def Shader(*shaders) -> GPUShader:
+    try:
+        new_shader = GPUShader(*shaders)
+    except Exception as e:
+        print("----------------------------------------------------------------")
+        print("ERROR! Couldn't create GPUShader:")
+        print(e)
+        print("----------------------------------------------------------------")
+        return None
+    return new_shader
 
 # TODO: Make it beautiful, PLEASE...
 class SH(Enum):

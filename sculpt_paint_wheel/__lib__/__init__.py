@@ -39,10 +39,6 @@ if __main__ == 'sculpt_paint_wheel':
 
     # 2nd method.
     CFS2_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
-
   uniform vec4 co;
   out vec4 fragColor;
 
@@ -68,10 +64,6 @@ if __main__ == 'sculpt_paint_wheel':
 
   # 2nd method.
     CFS2_GAMMA_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
-
   uniform vec4 co;
   out vec4 fragColor;
 
@@ -96,10 +88,6 @@ if __main__ == 'sculpt_paint_wheel':
   """
 
     CFS_CROPTOP_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
-
   uniform vec4 co;
   out vec4 fragColor;
 
@@ -127,10 +115,6 @@ if __main__ == 'sculpt_paint_wheel':
   """
 
     CFS_CROPBOT_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
-
   uniform vec4 co;
   out vec4 fragColor;
 
@@ -306,7 +290,6 @@ if __main__ == 'sculpt_paint_wheel':
   """
 
     PLIGHT_FS = """
-  precision mediump float;
   uniform vec3 co;
   out vec4 fragColor;
   void main()
@@ -323,9 +306,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     RNGBLRANG_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   out vec4 fragColor;
 
   float PI = 3.14159265359;
@@ -385,9 +365,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     RNGBLR_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   out vec4 fragColor;
 
   uniform vec4 co;
@@ -435,9 +412,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     RNGBLRSLC_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   out vec4 fragColor;
 
   uniform vec4 co;
@@ -473,9 +447,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     RTCROMASLLIN_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   float PI_4 = 0.785398;
   uniform float h;
   out vec4 fragColor;
@@ -494,10 +465,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     CRNGCROMLINH_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
-
   #define TWO_PI 6.28318530718
 
   uniform float s; // saturation
@@ -547,9 +514,6 @@ if __main__ == 'sculpt_paint_wheel':
     SHCx4343524F4D415F48 = (CF_VS, CRNGCROMLINH_FS)
     SHCx5243524f4d415f534c5f4c494e = (CF_VS, RTCROMASLLIN_FS)
     RNGS_SPLITANG_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   out vec4 fragColor;
 
   float PI_2 = 6.283185;
@@ -623,9 +587,6 @@ if __main__ == 'sculpt_paint_wheel':
   }
   """
     CRNGCROMLINW_FS = """
-  #ifdef GL_ES
-  precision mediump float;
-  #endif
   #define RAD 1.5708
   #define RAD_2 RAD/2
   #define PI 3.14159265359

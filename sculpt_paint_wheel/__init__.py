@@ -17,7 +17,7 @@ bl_info = {
     "name": "Sculpt+Paint Wheel",
     "author": "J. Fran Matheu (@jfranmatheu)",
     "description": "Enhance your workflow with this awesome sculpt+paint wheel!",
-    "blender": (3, 5, 1),
+    "blender": (3, 6, 1),
     "version": (3, 0, 3),
     "location": "Hold 'Space' inside 3D Viewport in Sculpt/Texture/Vertex/Weight modes. // 3D Viewport > Sidebar ('N') > 'Sculpt'/'Paint' tab > 'Sculpt Wheel'/'Paint Wheel'",
     "warning": "Versions are X.Y.Z, where X is for main version, Y for subversion (bugfixes) and Z for alpha/beta development (0 on release versions).",

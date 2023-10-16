@@ -549,7 +549,7 @@ class SCULPT_OT_wheel(Operator):
             else:
                 self.gestual_pad_rad = int(self.tarta_rad * .6)
                 self.text_size = 12 * wheel_rad / 150 * self.dpi_factor
-                
+
 
         self.icons = []
         from bpy.path import abspath as b3d_abspath
@@ -568,7 +568,7 @@ class SCULPT_OT_wheel(Operator):
                         self.active_tool_index = i
                     if t.tool.use_custom_icon:
                         icopath = t.tool.icon_filepath if not t.tool.icon_filepath.startswith('//') else b3d_abspath(t.tool.icon_filepath, library=t.tool.library)
-                        ico = load_image_from_filepath(t.tool.icon_filepath)
+                        ico = load_image_from_filepath(icopath)
                     else:
                         ico = get_tool_icon(t.tool)
                 if not ico:

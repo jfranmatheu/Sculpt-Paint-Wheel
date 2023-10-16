@@ -58,7 +58,7 @@ class SCULPT_OT_wheel_add_active_tool(Operator):
     @classmethod
     def poll(cls, context):
         sculpt_wheel = Props.SculptWheelData(context)
-        return context.mode == 'SCULPT' and culpt_wheel.active_toolset != -1
+        return context.mode == 'SCULPT' and sculpt_wheel.active_toolset != -1
 
     def execute(self, context):
         # Add non-brush tool.

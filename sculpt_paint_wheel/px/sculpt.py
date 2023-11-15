@@ -249,7 +249,7 @@ def draw_callback_px(op, ctx, o):
 
             if text:
                 if space:
-                    SetFontSize(0, text_size, 72)
+                    SetFontSize(0, text_size)
                     _split = text.split(' ')
                     if len(_split) > 1:
                         line_idx = 0

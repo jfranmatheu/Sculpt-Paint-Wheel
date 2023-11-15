@@ -10,7 +10,7 @@ def SetFontClip(id,xi,xf,yi,yf):enable(id,CLIPPING);clipping(id,xi,xf,yi,yf)
 def RstFontCLip(id):disable(id,CLIPPING)
 def SetFontRot(id,a):enable(id,ROTATION);rotation(id,a)
 def RstFontRot(id):disable(id,ROTATION)
-def SetFontSize(id,_size,_dpi):size(id,_size,_dpi)
+def SetFontSize(id,_size):size(id,_size)
 
 from .state import RstBlend, SetBlend
 
@@ -59,7 +59,7 @@ def Draw_Text_AlignCenter(_x=0, _y=0, _text='', _text_size=12, _text_color=(1, 1
         text_enable(_font_id, SHADOW)
         text_shadow(_font_id, 3, 0, 0, 0, .6)
         text_shadow_offset(0, -1, -1)
-    text_size(_font_id, _text_size, 72)
+    text_size(_font_id, _text_size)
     dim = text_dim(_font_id, _text)
     text_color(_font_id, *_text_color)
     text_position(_font_id, _x - dim[0]*.5, _y - dim[1]*.5, 0)

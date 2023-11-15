@@ -202,7 +202,7 @@ def draw_callback_px(op, ctx, o):
 
     if text:
         if space:
-            SetFontSize(0, text_size, 72)
+            SetFontSize(0, text_size)
             split = text.split(' ')
             w, h = GetFontDim(0, 'X')
             half_rad = int(op.gestual_pad_rad / 2)

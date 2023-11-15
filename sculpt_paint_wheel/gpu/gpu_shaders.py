@@ -43,9 +43,9 @@ class Shader2D(Enum):
         return self.value
 
 class ShaderName3D(Enum):
-    UNIFORM = '3D_UNIFORM_COLOR'
-    FLAT    = '3D_FLAT_COLOR'
-    SMOOTH  = '3D_SMOOTH_COLOR'
+    UNIFORM = 'UNIFORM_COLOR'
+    FLAT    = 'FLAT_COLOR'
+    SMOOTH  = 'SMOOTH_COLOR'
 
     def __call__(self):
         return self.value

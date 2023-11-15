@@ -4,10 +4,10 @@ from enum import Enum
 
 
 class ShaderName2D(Enum):
-    IMAGE   = '2D_IMAGE'
-    UNIFORM = '2D_UNIFORM_COLOR'
-    FLAT    = '2D_FLAT_COLOR'
-    SMOOTH  = '2D_SMOOTH_COLOR'
+    IMAGE   = 'IMAGE'
+    UNIFORM = 'UNIFORM_COLOR'
+    FLAT    = 'FLAT_COLOR'
+    SMOOTH  = 'SMOOTH_COLOR'
 
     def __call__(self):
         return self.value

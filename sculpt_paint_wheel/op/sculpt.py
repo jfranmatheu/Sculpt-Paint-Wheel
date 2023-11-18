@@ -555,13 +555,14 @@ class SCULPT_OT_wheel(Operator):
         from bpy.path import abspath as b3d_abspath
         for i, t in enumerate(self.active_toolset.tools):
             if t:
-                if t.tool is None:
-                    continue
                 if t.idname:
                     if t.idname == active_tool:
                         self.active_tool_pos = self.tool_pos[i]
                         self.active_tool_index = i
                     ico = get_tool_icon(t.idname, False)
+                elif t.tool is None:
+                    print("WARN! NONE TOOL")
+                    continue
                 else:
                     if t.tool == active_tool:
                         self.active_tool_pos = self.tool_pos[i]

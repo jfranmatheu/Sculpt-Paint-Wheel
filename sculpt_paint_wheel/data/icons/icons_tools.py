@@ -78,6 +78,10 @@ class DefToolImage(Enum):
     DISPLACEMENT_SMEAR = 'Displacement_Smear_icon'
     TOPOLOGY = 'Slide_Relax_icon'
 
+    # 3.X
+    T_MASK_BY_COLOR = 'MaskByColor_icon'
+    T_COLOR_FILTER = 'ColorFilter_icon'
+
     def __call__(self):
         return load_image(self.value, '.png', 'tools')
 
@@ -86,10 +90,12 @@ def get_tool_icon(tool, is_brush=True):
     if is_brush:
         attr = getattr(DefToolImage, tool.sculpt_tool, None)
     else:
+        # print(tool)
         name = 'T_' + tool.split('.')[1].upper()
         # print(name)
         attr = getattr(DefToolImage, name, None)
-    #print("ATTR:", attr)
+    # print("ATTR:", attr)
     if not attr:
+        print("Could not find icon for tool:", tool)
         return None
     return attr()

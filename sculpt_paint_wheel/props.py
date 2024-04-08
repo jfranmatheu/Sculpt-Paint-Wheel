@@ -10,5 +10,8 @@ class Props:
         for scene in bpy.data.scenes:
             if 'spwheel' in scene:
                 return scene.sculpt_wheel
-        context.scene['spwheel'] = 1
+        try:
+            context.scene['spwheel'] = 1
+        except AttributeError:
+            pass
         return context.scene.sculpt_wheel

@@ -16,7 +16,7 @@ modes_with_custom_toolsets = {'SCULPT'}
 from os.path import dirname, abspath, join, exists, isfile, basename
 from glob import glob
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 
 class IO_OT_export_active_toolset(Operator):

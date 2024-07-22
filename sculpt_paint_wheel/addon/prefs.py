@@ -1,7 +1,7 @@
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.props import *
 from .. import __package__ as main_package
-from sculpt_paint_wheel.file_manager import UserData
+from ..file_manager import UserData
 
 
 def get_prefs(context):

@@ -1,7 +1,7 @@
 from bpy.types import Panel
 from bl_ui.properties_paint_common import brush_settings
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 
 class SculptWheelTool_ContextMenu(Panel):

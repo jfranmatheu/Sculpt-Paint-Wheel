@@ -2,7 +2,7 @@ from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty
 from bpy.path import abspath
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 
 class SCULPT_OT_wheel_add_customm_button(Operator):

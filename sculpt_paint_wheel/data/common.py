@@ -5,7 +5,7 @@ from os.path import isfile, join, dirname
 from . sculpt.presets import preset_menus, preset_operators, preset_panels
 import bpy
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 blender_icons_path = join(dirname(dirname(__file__)), 'images', 'blender', 'tile234.png')
 

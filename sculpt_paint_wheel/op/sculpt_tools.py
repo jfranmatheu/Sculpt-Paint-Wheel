@@ -3,9 +3,9 @@ from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty, BoolProperty
 from bpy.path import abspath
 from bpy_extras.io_utils import ExportHelper, ImportHelper
-from sculpt_paint_wheel.file_manager import UserData
+from ..file_manager import UserData
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 
 class SCULPTWHEEL_OT_run_custom_op(Operator):

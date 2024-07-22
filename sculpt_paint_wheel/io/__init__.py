@@ -7,7 +7,7 @@ import json
 import re
 from .. import bl_info
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 '''
 #user_data_dir = join(dirname(dirname(__file__)), 'user_data')
 from .. import gen_config

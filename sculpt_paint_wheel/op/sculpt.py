@@ -9,7 +9,7 @@ from .. utils import * #CursorIcon, Cursor, Anim, Ease, rotate_point_around_poin
 from .. addon.prefs import get_prefs
 from math import radians
 from gpu.texture import from_image as gpu_texture_from_image
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 brush_idname_exceptions = {'MULTIPLANE_SCRAPE', 'TOPOLOGY'}
 

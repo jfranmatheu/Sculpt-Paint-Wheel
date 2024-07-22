@@ -1,5 +1,3 @@
-# from sculpt_paint_wheel.data import SculptWheelData as _SculptWheelData
-
 import bpy
 
 

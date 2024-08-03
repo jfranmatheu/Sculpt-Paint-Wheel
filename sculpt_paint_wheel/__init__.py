@@ -29,7 +29,6 @@ auto_load.init()
 
 import sys
 import bpy
-from os
 
 blender_version = bpy.app.version
 if blender_version >= (4, 2, 0):

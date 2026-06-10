@@ -17,25 +17,14 @@ bl_info = {
     "name": "Sculpt+Paint Wheel",
     "author": "J. Fran Matheu (@jfranmatheu)",
     "description": "Enhance your workflow with this awesome sculpt+paint wheel!",
-    "blender": (4, 2, 0),
-    "version": (3, 0, 4),
+    "blender": (5, 2, 0),
+    "version": (3, 0, 5),
     "location": "Hold 'Space' inside 3D Viewport in Sculpt/Texture/Vertex/Weight modes. // 3D Viewport > Sidebar ('N') > 'Sculpt'/'Paint' tab > 'Sculpt Wheel'/'Paint Wheel'",
     "warning": "Versions are X.Y.Z, where X is for main version, Y for subversion (bugfixes) and Z for alpha/beta development (0 on release versions).",
     "category": "Interface"
 }
 
 auto_load.init()
-
-
-import sys
-import bpy
-
-blender_version = bpy.app.version
-if blender_version >= (4, 2, 0):
-    MODULE_NAME = __package__.split('.')[-1]
-    if MODULE_NAME in sys.modules:
-        del sys.modules[MODULE_NAME]
-    sys.modules[MODULE_NAME] = sys.modules[f'bl_ext.user_default.{MODULE_NAME}']
 
 
 def gen_config():

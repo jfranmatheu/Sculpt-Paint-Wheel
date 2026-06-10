@@ -6,6 +6,7 @@ from math import cos, sin, tan, pi, degrees, atan, floor, log
 from .. utils import * #Cursor, CursorIcon
 from .. utils.checkers import is_gpencil, is_gpencil_paint
 from .. addon import get_keyitem, get_prefs
+from ..utils.compat import get_unified_paint_settings
 
 
 class PAINT_OT_wheel(Operator):
@@ -265,7 +266,7 @@ class PAINT_OT_wheel(Operator):
             self.dpi_factor = win_h / 1057 # 1057 without title bar of app.
             self.rad *= self.dpi_factor
         
-        self.ups = context.tool_settings.unified_paint_settings if not self.is_gpencil else None
+        self.ups = get_unified_paint_settings(context) if not self.is_gpencil else None
         self.active_tool = mode_settings.brush
         self.color = self.active_tool.color
 

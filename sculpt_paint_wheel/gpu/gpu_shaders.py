@@ -1,3 +1,6 @@
+import re
+import bpy
+import gpu
 from gpu.shader import from_builtin#, code_from_builtin # NOTE: Exposes the internal shader code for query.
 from gpu.types import GPUShader
 from enum import Enum
@@ -107,7 +110,10 @@ class ShaderType(Enum):
 
 def Shader(*shaders) -> GPUShader:
     try:
-        new_shader = GPUShader(*shaders)
+        if bpy.app.version >= (5, 0):
+            new_shader = _create_shader_50(*shaders)
+        else:
+            new_shader = GPUShader(*shaders)
     except Exception as e:
         print("----------------------------------------------------------------")
         print("ERROR! Couldn't create GPUShader:")
@@ -115,6 +121,87 @@ def Shader(*shaders) -> GPUShader:
         print("----------------------------------------------------------------")
         return None
     return new_shader
+
+
+def _strip_shader_declarations(source: str) -> str:
+    cleaned = []
+    skip_depth = 0
+    for line in source.splitlines():
+        stripped = line.strip()
+        if skip_depth:
+            skip_depth += line.count("{") - line.count("}")
+            continue
+        if stripped.startswith("float linearrgb_to_srgb(") or stripped.startswith("void linearrgb_to_srgb("):
+            skip_depth = line.count("{") - line.count("}")
+            if skip_depth <= 0:
+                skip_depth = 1
+            continue
+        if not stripped:
+            cleaned.append(line)
+            continue
+        if stripped.startswith("uniform "):
+            continue
+        if stripped.startswith("in "):
+            continue
+        if stripped.startswith("out "):
+            continue
+        cleaned.append(line)
+    return "\n".join(cleaned)
+
+
+def _iter_uniforms(*sources):
+    seen = set()
+    for source in sources:
+        for uniform_type, uniform_name in re.findall(r"uniform\s+([A-Za-z0-9_]+)\s+([A-Za-z0-9_]+)\s*;", source):
+            key = (uniform_type, uniform_name)
+            if key in seen:
+                continue
+            seen.add(key)
+            yield uniform_type, uniform_name
+
+
+def _create_shader_50(vertex_source: str, fragment_source: str, geometry_source=None, libcode=None, defines=None):
+    if geometry_source is not None:
+        raise RuntimeError("Geometry shaders are not supported by the Blender 5.x compatibility path")
+
+    shader_info = gpu.types.GPUShaderCreateInfo()
+
+    if "texco_interp" in vertex_source:
+        vert_out = gpu.types.GPUStageInterfaceInfo("spw_iface")
+        vert_out.smooth('VEC2', "texco_interp")
+        shader_info.vertex_in(0, 'VEC2', "p")
+        shader_info.vertex_in(1, 'VEC2', "texco")
+        shader_info.vertex_out(vert_out)
+    else:
+        shader_info.vertex_in(0, 'VEC2', "p")
+
+    shader_info.push_constant('MAT4', "ModelViewProjectionMatrix")
+
+    sampler_slot = 0
+    for uniform_type, uniform_name in _iter_uniforms(vertex_source, fragment_source):
+        if uniform_name == "ModelViewProjectionMatrix":
+            continue
+        if uniform_type == "sampler2D":
+            shader_info.sampler(sampler_slot, 'FLOAT_2D', uniform_name)
+            sampler_slot += 1
+            continue
+        if uniform_type == "float":
+            shader_info.push_constant('FLOAT', uniform_name)
+            continue
+        if uniform_type == "int":
+            shader_info.push_constant('INT', uniform_name)
+            continue
+        if uniform_type == "vec3":
+            shader_info.push_constant('VEC3', uniform_name)
+            continue
+        if uniform_type == "vec4":
+            shader_info.push_constant('VEC4', uniform_name)
+            continue
+
+    shader_info.fragment_out(0, 'VEC4', "fragColor")
+    shader_info.vertex_source(_strip_shader_declarations(vertex_source))
+    shader_info.fragment_source(_strip_shader_declarations(fragment_source))
+    return gpu.shader.create_from_info(shader_info)
 
 # TODO: Make it beautiful, PLEASE...
 class SH(Enum):

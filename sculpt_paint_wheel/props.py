@@ -1,3 +1,5 @@
+# from sculpt_paint_wheel.data import SculptWheelData as _SculptWheelData
+
 import bpy
 
 
@@ -8,8 +10,5 @@ class Props:
         for scene in bpy.data.scenes:
             if 'spwheel' in scene:
                 return scene.sculpt_wheel
-        try:
-            context.scene['spwheel'] = 1
-        except AttributeError:
-            pass
+        context.scene['spwheel'] = 1
         return context.scene.sculpt_wheel

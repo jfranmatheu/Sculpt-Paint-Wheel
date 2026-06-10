@@ -10,6 +10,14 @@ from .. addon.prefs import get_prefs
 from math import radians
 from gpu.texture import from_image as gpu_texture_from_image
 from ..props import Props
+from ..utils.compat import (
+    cache_brush_preview_icon,
+    get_sculpt_brush_type,
+    get_sculpt_brush_tool_name,
+    get_tool_idname_name,
+    is_brush_tool_idname,
+    get_unified_paint_settings,
+)
 
 brush_idname_exceptions = {'MULTIPLANE_SCRAPE', 'TOPOLOGY'}
 
@@ -20,7 +28,8 @@ class SCULPT_OT_wheel(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.area.type == 'VIEW_3D' and context.mode == 'SCULPT'
+        area = getattr(context, "area", None)
+        return area is not None and area.type == 'VIEW_3D' and context.mode == 'SCULPT'
 
     def finish(self, context):
         if hasattr(self, '_handler'):
@@ -303,7 +312,7 @@ class SCULPT_OT_wheel(Operator):
                             self.active_tool_is_brush = False
                             self.active_tool_index = self.on_hover_tool_index
                             return {'RUNNING_MODAL'}
-                        elif active_tool.sculpt_tool in {'PAINT', 'SMEAR'}:
+                        elif get_sculpt_brush_type(active_tool) in {'PAINT', 'SMEAR'}:
                             self.color = active_tool.color
                             self.init_color()
                             self.active_tool_is_brush = True
@@ -395,13 +404,13 @@ class SCULPT_OT_wheel(Operator):
         active_tool = context.tool_settings.sculpt.brush
         if not active_tool:
             return {'FINISHED'}
-        b_type = active_tool.sculpt_tool
-        self.ups = context.tool_settings.unified_paint_settings
-        if not b_type in brush_idname_exceptions:
-            b_type = active_tool.sculpt_tool.replace('_', ' ').title()
+        b_type = get_sculpt_brush_type(active_tool)
+        self.ups = get_unified_paint_settings(context)
+        if b_type and b_type not in brush_idname_exceptions:
+            b_type = get_sculpt_brush_tool_name(active_tool)
             idname = context.workspace.tools.from_space_view3d_mode('SCULPT').idname
-            t_type = idname.split('.')[1]
-            if b_type != t_type:
+            t_type = get_tool_idname_name(idname)
+            if not is_brush_tool_idname(idname) and b_type != t_type:
                 active_tool = idname
                 self.active_tool = None
                 self.prev_brush_size = 0
@@ -461,7 +470,7 @@ class SCULPT_OT_wheel(Operator):
         else:
             if isinstance(active_tool, str):
                 active_tool = context.tool_settings.sculpt.brush
-            if active_tool.sculpt_tool not in {'PAINT', 'SMEAR'}:
+            if get_sculpt_brush_type(active_tool) not in {'PAINT', 'SMEAR'}:
                 self.color = None
                 self.active_tool_is_brush = True
             else:
@@ -567,11 +576,23 @@ class SCULPT_OT_wheel(Operator):
                     if t.tool == active_tool:
                         self.active_tool_pos = self.tool_pos[i]
                         self.active_tool_index = i
-                    if t.tool.use_custom_icon:
-                        icopath = t.tool.icon_filepath if not t.tool.icon_filepath.startswith('//') else b3d_abspath(t.tool.icon_filepath, library=t.tool.library)
-                        ico = load_image_from_filepath(icopath)
-                    else:
+                    ico = None
+                    if getattr(t, "asset_icon_filepath", ""):
+                        ico = load_image_from_filepath(t.asset_icon_filepath)
+                    if not ico:
+                        refreshed_icon_path = cache_brush_preview_icon(t.tool, getattr(t, "asset_identifier", ""))
+                        if refreshed_icon_path:
+                            t.asset_icon_filepath = refreshed_icon_path
+                            ico = load_image_from_filepath(refreshed_icon_path)
+                    if not ico:
+                        # Prefer dynamic icon resolution (asset preview / brush type mapping) first.
                         ico = get_tool_icon(t.tool)
+                    if not ico:
+                        tool_use_custom_icon = getattr(t.tool, "use_custom_icon", False)
+                        tool_icon_filepath = getattr(t.tool, "icon_filepath", "")
+                        if tool_use_custom_icon and tool_icon_filepath:
+                            icopath = tool_icon_filepath if not tool_icon_filepath.startswith('//') else b3d_abspath(tool_icon_filepath, library=t.tool.library)
+                            ico = load_image_from_filepath(icopath)
                 if not ico:
                     ico = DefToolImage.DEFAULT()
                 if not ico.name.startswith('.'):
@@ -840,32 +861,49 @@ class SCULPT_OT_wheel(Operator):
         self.prev_mouse = mouse
 
     def get_brush_size(self):
-        if not self.active_tool:
-            return self.prev_brush_size
-        if self.ups.use_unified_size:
+        active_brush = self.active_tool
+        if not active_brush:
+            active_brush = getattr(bpy.context.tool_settings.sculpt, "brush", None)
+        if self.ups and self.ups.use_unified_size:
             return self.ups.size
-        return self.active_tool.size
+        if active_brush:
+            return active_brush.size
+        return self.prev_brush_size
 
     def get_brush_strength(self):
-        if not self.active_tool:
-            return self.prev_brush_strength
-        if self.ups.use_unified_strength:
+        active_brush = self.active_tool
+        if not active_brush:
+            active_brush = getattr(bpy.context.tool_settings.sculpt, "brush", None)
+        if self.ups and self.ups.use_unified_strength:
             return self.ups.strength
-        return self.active_tool.strength
+        if active_brush:
+            return active_brush.strength
+        return self.prev_brush_strength
 
     def set_brush_size(self, value):
         value = clamp(value, 1, 500)
-        if self.ups.use_unified_size:
+        active_brush = self.active_tool
+        if not active_brush:
+            active_brush = getattr(bpy.context.tool_settings.sculpt, "brush", None)
+
+        if active_brush:
+            active_brush.size = int(value)
+
+        if self.ups and self.ups.use_unified_size:
             self.ups.size = int(value)
-        else:
-            self.active_tool.size = int(value)
+            if active_brush:
+                self.ups.unprojected_size = active_brush.unprojected_size
 
     def set_brush_strength(self, value):
         value = clamp(value, 0.01, 2)
-        if self.ups.use_unified_strength:
+        if self.ups and self.ups.use_unified_strength:
             self.ups.strength = value
         else:
-            self.active_tool.strength = value
+            active_brush = self.active_tool
+            if not active_brush:
+                active_brush = getattr(bpy.context.tool_settings.sculpt, "brush", None)
+            if active_brush:
+                active_brush.strength = value
 
     def is_tarta_on_hover(self, mouse):
         if point_inside_circle(mouse, self.pos, self.color_ring_rad):

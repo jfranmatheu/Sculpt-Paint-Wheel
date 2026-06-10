@@ -6,6 +6,17 @@ from . sculpt.presets import preset_menus, preset_operators, preset_panels
 import bpy
 
 from ..props import Props
+from ..utils.compat import (
+    activate_sculpt_asset_identifier,
+    activate_sculpt_brush,
+    activate_sculpt_tool_name,
+    cache_brush_preview_icon,
+    find_compatible_sculpt_brush,
+    get_active_sculpt_brush_asset_identifier,
+    get_sculpt_brush_asset_identifier,
+    get_legacy_sculpt_tool_idname,
+    get_sculpt_brush_tool_idname,
+)
 
 blender_icons_path = join(dirname(dirname(__file__)), 'images', 'blender', 'tile234.png')
 
@@ -58,6 +69,8 @@ class WheelTool(PropertyGroup):
     tool : PointerProperty(type=Brush, update=update_tool)
     prev_tool : PointerProperty(type=Brush)
     idname : StringProperty()
+    asset_identifier : StringProperty()
+    asset_icon_filepath : StringProperty()
     order : IntProperty(name="Index-Order", default=0, min=0)
 
     def show_context_menu(self):
@@ -116,8 +129,13 @@ class WheelToolset(PropertyGroup):
                     D.brushes.remove(tool.tool)
         self.tools.clear()
         for data in def_tools:
-            br = D.brushes.get(data[0], None)
+            br = find_compatible_sculpt_brush(data[0], D.brushes)
             if br is None:
+                tool_idname = get_legacy_sculpt_tool_idname(data[0])
+                if tool_idname:
+                    tool = self.add_tool(tool_idname, is_brush=False)
+                    if tool and data[1]:
+                        tool.name = data[1]
                 continue
             if copy:
                 new_br = br.copy()
@@ -133,6 +151,9 @@ class WheelToolset(PropertyGroup):
             if tool and data[1]:
                 # tool.name = data[1]
                 tool.name = new_br.name
+            if tool:
+                tool.asset_identifier = get_sculpt_brush_asset_identifier(br)
+                tool.asset_icon_filepath = cache_brush_preview_icon(br, tool.asset_identifier) or ""
         self.use_defaults = True
 
     def add_tool(self, tool, is_brush=True):
@@ -142,7 +163,9 @@ class WheelToolset(PropertyGroup):
                 return
             if not tool.use_paint_sculpt:
                 return
-            if tool.use_custom_icon and (not tool.icon_filepath or not isfile(tool.icon_filepath)):
+            use_custom_icon = getattr(tool, "use_custom_icon", False)
+            icon_filepath = getattr(tool, "icon_filepath", "")
+            if use_custom_icon and (not icon_filepath or not isfile(icon_filepath)):
                 return
             if self.search_tool(tool):
                 return
@@ -150,6 +173,8 @@ class WheelToolset(PropertyGroup):
             new_tool.name = tool.name
             new_tool.tool = tool
             new_tool.prev_tool = tool
+            new_tool.asset_identifier = get_sculpt_brush_asset_identifier(tool) or ""
+            new_tool.asset_icon_filepath = cache_brush_preview_icon(tool, new_tool.asset_identifier) or ""
             tool['order'] = order
         else:
             if not tool:
@@ -157,6 +182,8 @@ class WheelToolset(PropertyGroup):
             new_tool = self.tools.add()
             new_tool.idname = tool
             new_tool.name = tool.split('.')[1].replace('_', ' ').capitalize()
+            new_tool.asset_identifier = ""
+            new_tool.asset_icon_filepath = ""
         
         new_tool.order = order
         return new_tool
@@ -174,10 +201,24 @@ class WheelToolset(PropertyGroup):
 
     def select_tool(self, ctx, index):
         if self.tools[index].idname != '':
-            OP.wm.tool_set_by_id(name=self.tools[index].idname)
+            idname = self.tools[index].idname
+            if idname.startswith("builtin_brush."):
+                activate_sculpt_tool_name(ctx, idname.split(".", 1)[1])
+            else:
+                OP.wm.tool_set_by_id(name=idname)
         else:
-            OP.wm.tool_set_by_id(name="builtin_brush.Draw")
-            ctx.tool_settings.sculpt.brush = self.tools[index].tool
+            brush = self.tools[index].tool
+            if self.tools[index].asset_identifier and activate_sculpt_asset_identifier(self.tools[index].asset_identifier):
+                self.tools[index].asset_identifier = get_active_sculpt_brush_asset_identifier(ctx) or self.tools[index].asset_identifier
+                active_brush = getattr(getattr(ctx.tool_settings, "sculpt", None), "brush", None)
+                if active_brush:
+                    self.tools[index].asset_icon_filepath = cache_brush_preview_icon(active_brush, self.tools[index].asset_identifier) or self.tools[index].asset_icon_filepath
+                return
+            if activate_sculpt_brush(ctx, brush):
+                self.tools[index].asset_identifier = get_active_sculpt_brush_asset_identifier(ctx) or self.tools[index].asset_identifier
+                active_brush = getattr(getattr(ctx.tool_settings, "sculpt", None), "brush", None)
+                if active_brush:
+                    self.tools[index].asset_icon_filepath = cache_brush_preview_icon(active_brush, self.tools[index].asset_identifier) or self.tools[index].asset_icon_filepath
 
     def swap_tools(self, t1, t2):
         #from .. utils import swap
@@ -192,6 +233,10 @@ class WheelToolset(PropertyGroup):
         temp_tool = self.tools[t1].tool
         temp_name = self.tools[t1].name
         temp_index = self.tools[t1].order
+        temp_prev_tool = self.tools[t1].prev_tool
+        temp_idname = self.tools[t1].idname
+        temp_asset_identifier = self.tools[t1].asset_identifier
+        temp_asset_icon_filepath = self.tools[t1].asset_icon_filepath
 
         if self.tools[t1].tool:
             self.tools[t1].tool['order'] = self.tools[t2].order
@@ -202,8 +247,16 @@ class WheelToolset(PropertyGroup):
 
         self.tools[t1].tool = self.tools[t2].tool
         self.tools[t1].name = self.tools[t2].name
+        self.tools[t1].prev_tool = self.tools[t2].prev_tool
+        self.tools[t1].idname = self.tools[t2].idname
+        self.tools[t1].asset_identifier = self.tools[t2].asset_identifier
+        self.tools[t1].asset_icon_filepath = self.tools[t2].asset_icon_filepath
         self.tools[t2].tool = temp_tool
         self.tools[t2].name = temp_name
+        self.tools[t2].prev_tool = temp_prev_tool
+        self.tools[t2].idname = temp_idname
+        self.tools[t2].asset_identifier = temp_asset_identifier
+        self.tools[t2].asset_icon_filepath = temp_asset_icon_filepath
 
         #swap(self.tools[t1].tool, self.tools[t2].tool)
         #swap(self.tools[t1].name, self.tools[t2].name)

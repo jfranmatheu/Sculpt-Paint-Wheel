@@ -6,6 +6,7 @@ from bpy_extras.io_utils import ExportHelper, ImportHelper
 from ..file_manager import UserData
 
 from ..props import Props
+from ..utils.compat import cache_brush_preview_icon, get_active_sculpt_brush_asset_identifier
 
 
 class SCULPTWHEEL_OT_run_custom_op(Operator):
@@ -61,17 +62,20 @@ class SCULPT_OT_wheel_add_active_tool(Operator):
         return context.mode == 'SCULPT' and sculpt_wheel.active_toolset != -1
 
     def execute(self, context):
-        # Add non-brush tool.
         sculpt_wheel = Props.SculptWheelData(context)
-        from bl_ui.properties_paint_common import UnifiedPaintPanel
-        if not UnifiedPaintPanel.paint_settings(context):
-            sculpt_wheel.get_active_toolset().add_tool(context.workspace.tools.from_space_view3d_mode('SCULPT').idname, False)
-            return {'FINISHED'}
-        # Add brush tool.
         brush = context.tool_settings.sculpt.brush
-        if not brush:
+        if brush:
+            tool = sculpt_wheel.get_active_toolset().add_tool(brush)
+            if tool:
+                tool.asset_identifier = get_active_sculpt_brush_asset_identifier(context) or ""
+                tool.asset_icon_filepath = cache_brush_preview_icon(brush, tool.asset_identifier) or ""
+            return {'FINISHED'}
+
+        active_tool = context.workspace.tools.from_space_view3d_mode('SCULPT', create=False)
+        if active_tool is None:
             return {'CANCELLED'}
-        sculpt_wheel.get_active_toolset().add_tool(brush)
+
+        sculpt_wheel.get_active_toolset().add_tool(active_tool.idname, False)
         return {'FINISHED'}
 
 class SCULPT_OT_wheel_remove_toolset(Operator):

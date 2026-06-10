@@ -1,5 +1,6 @@
 import sys
 import pathlib
+import tempfile
 from enum import Enum
 from os.path import join, dirname, exists, isdir
 from os import mkdir
@@ -11,7 +12,7 @@ b3d_config_path = join(b3d_user_path, "config")
 
 b3d_appdata_path = dirname(bpy.utils.resource_path('USER'))
 
-"""
+r"""
 * Linux *
 LOCAL: ./3.1/
 USER: $HOME/.config/blender/3.1/
@@ -62,8 +63,34 @@ def get_addondatadir() -> pathlib.Path:
     '''
 
 
+def resolve_user_data_path() -> pathlib.Path:
+    candidates = []
+
+    if sys.platform == "win32":
+        appdata = pathlib.Path.home() / "AppData" / "Roaming"
+        candidates.append(appdata / "Blender Foundation" / "Blender" / "addon_data" / "spwheel")
+        candidates.append(pathlib.Path(bpy.utils.resource_path('USER')) / "addon_data" / "spwheel")
+    elif sys.platform == "linux":
+        candidates.append(pathlib.Path.home() / ".local" / "share" / "blender" / "addon_data" / "spwheel")
+        candidates.append(pathlib.Path(bpy.utils.resource_path('USER')) / "addon_data" / "spwheel")
+    elif sys.platform == "darwin":
+        candidates.append(pathlib.Path.home() / "Library" / "Application Support" / "Blender" / "addon_data" / "spwheel")
+        candidates.append(pathlib.Path(bpy.utils.resource_path('USER')) / "addon_data" / "spwheel")
+
+    candidates.append(pathlib.Path(tempfile.gettempdir()) / "spwheel")
+
+    for path in candidates:
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            return path
+        except (PermissionError, OSError):
+            continue
+
+    return pathlib.Path(tempfile.gettempdir()) / "spwheel"
+
+
 # HARDCODED. Change this to change root of user data.
-user_data = join(b3d_appdata_path, 'addon_data', 'spwheel') # str((get_addondatadir() / "wheel_user_data").absolute())
+user_data = str(resolve_user_data_path())
 
 class UserData(Enum):
     ROOT = user_data

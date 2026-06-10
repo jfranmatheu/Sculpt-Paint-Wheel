@@ -13,6 +13,7 @@ from .. gui_types.toolbar import Toolbar
 from bl_ui.properties_paint_common import UnifiedPaintPanel
 from .. utils.checkers import *
 from gpu.texture import from_image as gpu_texture_from_image
+from ..utils.compat import get_unified_paint_settings
 
 
 weight_toolbar = Toolbar(rows_cols=2)
@@ -35,7 +36,8 @@ class WEIGHT_OT_wheel(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.area.type == 'VIEW_3D' and context.mode in {'PAINT_WEIGHT', 'WEIGHT_GPENCIL'}
+        area = getattr(context, "area", None)
+        return area is not None and area.type == 'VIEW_3D' and context.mode in {'PAINT_WEIGHT', 'WEIGHT_GPENCIL'}
 
     def show_hide_brush_cursor(self, context, state=True):
         if self.is_gpencil:
@@ -244,7 +246,7 @@ class WEIGHT_OT_wheel(Operator):
             return {'FINISHED'}
 
         self.is_gpencil = is_gpencil(context)
-        self.ups = context.tool_settings.unified_paint_settings if not self.is_gpencil else None
+        self.ups = get_unified_paint_settings(context) if not self.is_gpencil else None
         self.active_tool = active_tool
         self.prev_brush_size = self.get_brush_size()
         self.prev_brush_strength = self.get_brush_strength()

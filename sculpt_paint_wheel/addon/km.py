@@ -28,17 +28,17 @@ modes = {
     ### GREASE PENCIL MODES ###
     'PAINT_GPENCIL' : {
         'label' : 'GreasePencil Draw',
-        'km' : 'Grease Pencil Stroke Paint Mode',
+        'km' : 'Grease Pencil Draw Mode',
         'op' : 'paint.wheel', 
     },
     'VERTEX_GPENCIL' : {
         'label' : 'GreasePencil Vertex Paint',
-        'km' : 'Grease Pencil Stroke Vertex Mode',
+        'km' : 'Grease Pencil Vertex Paint',
         'op' : 'paint.wheel', 
     },
     'WEIGHT_GPENCIL' : {
         'label' : 'GreasePencil Weight Paint',
-        'km' : 'Grease Pencil Stroke Weight Mode',
+        'km' : 'Grease Pencil Weight Paint',
         'op' : 'weight.wheel', 
     },
     #'SCULPT_GPENCIL' : {
@@ -55,7 +55,11 @@ def get_keyitem_mode(context, mode):
     if mode not in modes:
         return None
     mode = modes[mode]
-    return context.window_manager.keyconfigs.user.keymaps[mode['km']].keymap_items.get(mode['op'], None)
+    keymaps = context.window_manager.keyconfigs.user.keymaps
+    km = keymaps.get(mode['km'])
+    if km is None:
+        return None
+    return km.keymap_items.get(mode['op'], None)
 
 #addon_keymaps = []
 def register():

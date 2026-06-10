@@ -4,7 +4,7 @@ from .. addon.prefs import WheelPreferences, get_prefs
 from bpy.props import *
 from .. icons import Icon
 
-from sculpt_paint_wheel.props import Props
+from ..props import Props
 
 '''
 class SculptWheelBasePanel(Panel):

@@ -47,7 +47,7 @@ class Tool():
         # BUG: ReferenceError: StructRNA of type Image has been removed
         if self.icon and isinstance(self.icon, Image):
             # self.icon.gl_load()
-            self.texture = gpu_texture_from_image(icon)
+            self.texture = gpu_texture_from_image(self.icon)
         else:
             icon = self.tool_icon()
             if icon:

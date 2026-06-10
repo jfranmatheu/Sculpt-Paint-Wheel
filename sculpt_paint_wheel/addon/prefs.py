@@ -2,10 +2,45 @@ from bpy.types import AddonPreferences, PropertyGroup
 from bpy.props import *
 from .. import __package__ as main_package
 from ..file_manager import UserData
+from types import SimpleNamespace
 
 
 def get_prefs(context):
-    return context.preferences.addons[main_package].preferences
+    addons = context.preferences.addons
+
+    addon = addons.get(main_package)
+    if addon is not None:
+        return addon.preferences
+
+    package_tail = "." + main_package
+    for addon in addons:
+        module = getattr(addon, "module", "")
+        if module == main_package or module.endswith(package_tail):
+            return addon.preferences
+
+    theme = SimpleNamespace(
+        base_color=(.004, .004, .004, .95),
+        pie_color=(.04, .04, .04, .6),
+        pad_color=(.12, .12, .12, .4),
+        tool_color=(.01, .01, .01, .9),
+        tool_color_hovered=(.02, .02, .02, .9),
+        tool_outline_color=(.164, .164, .164, .9),
+    )
+    color_picker = SimpleNamespace(lock_ring_sv=False)
+    return SimpleNamespace(
+        brush_lib_folder="",
+        radius=180,
+        show_tool_names=False,
+        use_custom_tool_colors=False,
+        keep_open=False,
+        custom_tool_color_mode='RING',
+        on_release_select=False,
+        gesturepad_mode='PREVIEW',
+        gesturepad_invert=False,
+        tool_icon_scale=0.92,
+        color_picker=color_picker,
+        theme=theme,
+    )
 
 
 class WheelTheme(PropertyGroup):
@@ -94,7 +129,7 @@ class WheelPreferences(AddonPreferences):
                 settings = left_column.column(align=True)
                 header = settings.box()
                 header.label(text="SculptWheel Settings" if is_prefs else "Tool Settings :",
-                             icon='BRUSH_SCULPT_DRAW' if is_prefs else 'TOOL_SETTINGS')
+                             icon='SCULPTMODE_HLT' if is_prefs else 'TOOL_SETTINGS')
 
                 props = settings.box()
                 props.prop(self, 'tool_icon_scale',

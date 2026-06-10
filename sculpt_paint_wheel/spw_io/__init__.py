@@ -8,6 +8,7 @@ import re
 from .. import bl_info
 
 from ..props import Props
+from ..utils.compat import activate_sculpt_brush, get_sculpt_brush_type, get_sculpt_brush_tool_idname
 '''
 #user_data_dir = join(dirname(dirname(__file__)), 'user_data')
 from .. import gen_config
@@ -208,7 +209,7 @@ def load_global_sculpt_toolsets(context, toolsets=None):
                     # Chequear si es una brush dupli.
                     if brush_name[-4] == '.' and brush_name[-1].isdigit():
                         brush_name = brush_name[:-4]
-                    pattern = brush_name + "\.\d\d\d"
+                    pattern = brush_name + r"\.\d\d\d"
                     #print("\t-> Looking for Brush <%s>" % brush_name)
                     for brush in data_to.brushes:
                         #brush = data_to.brushes.get(tool[1:], None)
@@ -244,9 +245,9 @@ def reload_global_toolsets(context):
     if not context.tool_settings.sculpt.brush:
         brush = bpy.data.brushes.get(active_brush_name, None)
         if brush:
-            context.tool_settings.sculpt.brush = brush
+            activate_sculpt_brush(context, brush)
         else:
-            bpy.ops.wm.tool_set_by_id(name="builtin_brush.Draw")
+            bpy.ops.wm.tool_set_by_id(name=get_sculpt_brush_tool_idname(brush) or "builtin_brush.Draw")
     context.area.tag_redraw()
 
 
@@ -316,7 +317,7 @@ def reload_active_global_toolset(context):
                 # Chequear si es una brush dupli.
                 if brush_name[-4] == '.' and brush_name[-1].isdigit():
                     brush_name = brush_name[:-4]
-                pattern = brush_name + "\.\d\d\d"
+                pattern = brush_name + r"\.\d\d\d"
                 #print("\t-> Looking for Brush <%s>" % brush_name)
                 for brush in data_to.brushes:
                     #brush = data_to.brushes.get(tool[1:], None)
@@ -330,9 +331,9 @@ def reload_active_global_toolset(context):
     if not context.tool_settings.sculpt.brush:
         brush = bpy.data.brushes.get(active_brush_name, None)
         if brush:
-            context.tool_settings.sculpt.brush = brush
+            activate_sculpt_brush(context, brush)
         else:
-            bpy.ops.wm.tool_set_by_id(name="builtin_brush.Draw")
+            bpy.ops.wm.tool_set_by_id(name=get_sculpt_brush_tool_idname(brush) or "builtin_brush.Draw")
     context.area.tag_redraw()
     return True
 
@@ -440,7 +441,7 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
         has_brush = context.tool_settings.sculpt.brush is not None
         if has_brush:
             b_name = context.tool_settings.sculpt.brush.name
-            b_type = context.tool_settings.sculpt.brush.sculpt_tool
+            b_type = get_sculpt_brush_type(context.tool_settings.sculpt.brush)
 
         # NO DUPLICATES.
         with bpy.data.libraries.load(lib_filepath, link=link) as (data_from, data_to):
@@ -463,7 +464,7 @@ def import_sculpt_toolset_data_from_lib(context, lib_name: str = "", overwrite: 
 
         if has_brush:# or not context.tool_settings.sculpt.brush:
             if bpy.data.brushes.get(b_name, None):
-                bpy.context.tool_settings.sculpt.brush = bpy.data.brushes[b_name]
+                activate_sculpt_brush(context, bpy.data.brushes[b_name])
 
             '''
             for brush in data_to.brushes:

@@ -1,5 +1,7 @@
 # SculptPaintWheel
 
+New repo: https://github.com/jfranmatheu/Sculpt-Paint-Wheel-Reborn
+
 A Blender addon that enables a cool UI for sculpt and paint modes for a better accesibility of tools in these modes.
 
 ![SculptPaintWheel Showcase Image](https://github.com/jfranmatheu/Sculpt-Paint-Wheel/blob/main/docs/images/SPWheel_2.jpg?raw=true)
